@@ -179,6 +179,8 @@ void fixUniforms(){
 
 int main(int argc, char *argv[]){
 
+    float a = 2;
+
     initGlut(argc, argv);
     initGlew();
     init_gl();
@@ -190,6 +192,7 @@ int main(int argc, char *argv[]){
     program_id = my_program->program_id;
 
     fixUniforms();
+    fire.init();
 
     glutMainLoop();
     return 0;

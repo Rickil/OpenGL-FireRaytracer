@@ -11,6 +11,12 @@ class Fire {
 public:
     std::vector<Particle> particles;
 
+    void init(){
+        for (Particle particle : particles){
+            particle.init();
+        }
+    }
+
     void update(GLuint program_id){
 
         //update particles buffers
@@ -22,6 +28,7 @@ public:
 
 
     Fire(unsigned int nbParticles, Vector3 color){
+        float a = 2;
         for (unsigned int i = 0; i < nbParticles; i++){
             Particle particle(color);
             particles.push_back(particle);

@@ -16,8 +16,11 @@ public:
     std::vector<float> vertex_buffer;
     std::vector<float> color_buffer;
 
-    Particle(Vector3 &color) : color(color) {
+    int n = 0;
 
+    Particle(Vector3 &color) : color(color) {}
+
+    void init(){
         //init vertex_buffer
         vertex_buffer = {
                 -0.5f, -0.5f, 0.0f,
@@ -25,6 +28,7 @@ public:
                 -0.5f, 0.5f, 0.0f,
                 0.5f, 0.5f, 0.0f,
         };
+
         Vector3::translateVerticesOnVector(vertex_buffer, position);
 
         //init color_buffer
@@ -37,9 +41,12 @@ public:
         //init vbos
         glGenBuffers(1, &vertex_VBO);TEST_OPENGL_ERROR();
         glGenBuffers(1, &color_VBO);TEST_OPENGL_ERROR();
+
     }
 
     void updateVAO(GLuint program_id){
+        std::cout << n << "\n";
+        n++;
         //get vertex location
         GLint vertex_location = glGetAttribLocation(program_id,"vPosition");TEST_OPENGL_ERROR();
         GLint color_location = glGetAttribLocation(program_id,"vColor");TEST_OPENGL_ERROR();
