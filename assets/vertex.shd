@@ -1,14 +1,15 @@
 #version 330 core
+
 in vec3 vPosition;
+in vec3 vColor;
 
 out vec4 color;
 
 uniform mat4 worldToProj_matrix;
-uniform vec3 vColor;
 
 void main()
 {
-    float scale = 10.0f;
+    float scale = 1.0f;
     color = vec4(vColor,1.0);
-    gl_Position = projection * vec4((vPosition * scale), 1.0);
+    gl_Position = worldToProj_matrix * vec4((vPosition * scale), 1.0);
 }

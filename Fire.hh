@@ -8,11 +8,18 @@ class Fire {
 public:
     std::vector<Particle> particles;
     std::vector<float> vertex_buffer;
+    std::vector<float> color_buffer;
 
-    void updateVertexBuffer(){
+    void updateBuffers(){
+        vertex_buffer.clear();
+        color_buffer.clear();
+
         for (Particle particle : particles){
             std::vector<float> particle_vertex_buffer = Particle::verticesFromParticle(particle);
+            std::vector<float> particle_color_buffer = {particle.color.x, particle.color.y, particle.color.z};
+
             vertex_buffer.insert(vertex_buffer.end(), particle_vertex_buffer.begin(), particle_vertex_buffer.end());
+            color_buffer.insert(color_buffer.end(), particle_color_buffer.begin(), particle_color_buffer.end());
         }
     }
 
@@ -23,7 +30,7 @@ public:
     }
 
     void update(){
-        updateVertexBuffer();
+        updateBuffers();
     }
 };
 
