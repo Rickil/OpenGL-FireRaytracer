@@ -6,6 +6,7 @@
 #define TP1_VECTOR3_HH
 
 #include <cmath>
+#include <vector>
 
 
 class Vector3 {
@@ -40,6 +41,14 @@ public:
         z/=norm;
 
         return  {x,y,z};
+    }
+
+    static void translateVerticesOnVector(std::vector<float>& vertices, Vector3 center){
+        for (int i = 0; i < vertices.size(); i+=3){
+            vertices[i] += center.x;
+            vertices[i+1] += center.y;
+            vertices[i+2] += center.z;
+        }
     }
 
     void operator+=(Vector3 v){

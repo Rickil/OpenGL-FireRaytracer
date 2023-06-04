@@ -2,7 +2,7 @@
 #include "Transformations.hh"
 #include "Camera.hh"
 #include "ObjLoader.hh"
-#include "Particle.hh"
+#include "Fire.hh"
 
 GLuint vao_id;
 GLuint program_id;
@@ -12,6 +12,7 @@ Vector2 mouse = {-1,-1};
 Vector3 lightPosition = {2,2,2};
 matrix4 MVP;
 int resolution = 800;
+float FPS = 1000/60;
 
 matrix4 getWorldToProjMatrix(){
 
@@ -28,6 +29,10 @@ matrix4 getWorldToProjMatrix(){
     worldToProj_matrix *= proj_matrix;
 
     return worldToProj_matrix;
+}
+
+void update(int value){
+
 }
 
 void window_resize(int width, int height) {
@@ -173,6 +178,7 @@ bool initGlut(int &argc, char *argv[]){
     glutIdleFunc(idleFunc);
     glutPassiveMotionFunc(mouseFunc);
     glutSetCursor(GLUT_CURSOR_NONE);
+    glutTimerFunc(FPS, update, 0);
     return true;
 }
 
