@@ -41,7 +41,6 @@ public:
         //init vbos
         glGenBuffers(1, &vertex_VBO);TEST_OPENGL_ERROR();
         glGenBuffers(1, &color_VBO);TEST_OPENGL_ERROR();
-
     }
 
     void updateVAO(GLuint program_id){
@@ -59,14 +58,14 @@ public:
         glBufferData(GL_ARRAY_BUFFER, vertex_buffer.size()*sizeof(float), vertex_buffer.data(), GL_DYNAMIC_DRAW);
         TEST_OPENGL_ERROR();
         glVertexAttribPointer(vertex_location, 3, GL_FLOAT, GL_FALSE, 0, 0);TEST_OPENGL_ERROR();
-        glEnable(vertex_location);TEST_OPENGL_ERROR();
+        glEnableVertexAttribArray(vertex_location);TEST_OPENGL_ERROR();
 
         //update color vbo
         glBindBuffer(GL_ARRAY_BUFFER, color_VBO);TEST_OPENGL_ERROR();
         glBufferData(GL_ARRAY_BUFFER, color_buffer.size()*sizeof(float), color_buffer.data(), GL_DYNAMIC_DRAW);
         TEST_OPENGL_ERROR();
         glVertexAttribPointer(color_location, 3, GL_FLOAT, GL_FALSE, 0, 0);TEST_OPENGL_ERROR();
-        glEnable(color_location);TEST_OPENGL_ERROR();
+        glEnableVertexAttribArray(color_location);TEST_OPENGL_ERROR();
     }
 
     void draw(){
