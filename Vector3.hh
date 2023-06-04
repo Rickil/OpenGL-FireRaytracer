@@ -51,6 +51,10 @@ public:
         }
     }
 
+    std::vector<float> toArray(){
+        return {x, y, z};
+    }
+
     void operator+=(Vector3 v){
         x+=v.x;
         y+=v.y;

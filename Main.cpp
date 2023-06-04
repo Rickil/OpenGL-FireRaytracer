@@ -4,7 +4,6 @@
 #include "ObjLoader.hh"
 #include "Fire.hh"
 
-GLuint vao_id;
 GLuint program_id;
 Camera camera;
 Vector2 mouse = {-1,-1};
@@ -31,7 +30,9 @@ matrix4 getWorldToProjMatrix(){
 }
 
 void update(int value){
-
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);TEST_OPENGL_ERROR();
+    fire.update(program_id);
+    glutPostRedisplay();
 }
 
 void window_resize(int width, int height) {
@@ -44,7 +45,7 @@ void window_resize(int width, int height) {
     matrix4 worldToProj_matrix = getWorldToProjMatrix();
 
     glUniformMatrix4fv(worldToProj_matrix_location, 1, GL_FALSE, &(worldToProj_matrix.m[0][0]));TEST_OPENGL_ERROR();
-    glutPostRedisplay();
+    //glutPostRedisplay();
 }
 
 void mouseFunc(int x, int y){
@@ -90,7 +91,7 @@ void mouseFunc(int x, int y){
     MVP = getWorldToProjMatrix();
 
     glUniformMatrix4fv(worldToProj_matrix_location, 1, GL_FALSE, &(MVP.m[0][0]));TEST_OPENGL_ERROR();
-    glutPostRedisplay();
+    //glutPostRedisplay();
 }
 
 void keyboardFunc(unsigned char key, int x, int y){
@@ -115,17 +116,11 @@ void keyboardFunc(unsigned char key, int x, int y){
     MVP = getWorldToProjMatrix();
 
     glUniformMatrix4fv(worldToProj_matrix_location, 1, GL_FALSE, &(MVP.m[0][0]));TEST_OPENGL_ERROR();
-    glutPostRedisplay();
+    //glutPostRedisplay();
 
 }
 
 void display() {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);TEST_OPENGL_ERROR();
-    glBindVertexArray(vao_id);
-    TEST_OPENGL_ERROR();
-    glDrawArrays(GL_TRIANGLES, 0, fire.vertex_buffer.size());
-    TEST_OPENGL_ERROR();
-    glBindVertexArray(0);TEST_OPENGL_ERROR();
     glutSwapBuffers();
 }
 
@@ -182,40 +177,6 @@ void fixUniforms(){
     glUniformMatrix4fv(worldToProj_matrix_location, 1, GL_FALSE, &(MVP.m[0][0]));TEST_OPENGL_ERROR();
 }
 
-void init_VBO(){
-
-    //get vertex location
-    GLint vertex_location = glGetAttribLocation(program_id,"vPosition");TEST_OPENGL_ERROR();
-    GLint color_location = glGetAttribLocation(program_id,"vColor");TEST_OPENGL_ERROR();
-
-    // Create and bind the Vertex Array Object (VAO)
-    glGenVertexArrays(1, &vao_id);TEST_OPENGL_ERROR();
-    glBindVertexArray(vao_id);TEST_OPENGL_ERROR();
-
-    // Create the Vertex Buffer Object (VBO) and copy the vertex data to it
-    GLuint vertex_VBO;
-    glGenBuffers(1, &vertex_VBO);TEST_OPENGL_ERROR();
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_VBO);TEST_OPENGL_ERROR();
-    glBufferData(GL_ARRAY_BUFFER, fire.vertex_buffer.size() * sizeof(float), fire.vertex_buffer.data(),
-                 GL_STATIC_DRAW);
-    TEST_OPENGL_ERROR();
-    glVertexAttribPointer(vertex_location, 3, GL_FLOAT, GL_FALSE, 0, 0);TEST_OPENGL_ERROR();
-    glEnableVertexAttribArray(vertex_location);TEST_OPENGL_ERROR();
-
-    GLuint color_VBO;
-    glGenBuffers(1, &color_VBO);TEST_OPENGL_ERROR();
-    glBindBuffer(GL_ARRAY_BUFFER, color_VBO);TEST_OPENGL_ERROR();
-    glBufferData(GL_ARRAY_BUFFER, fire.color_buffer.size()*sizeof(float), fire.color_buffer.data(), GL_STATIC_DRAW);
-    TEST_OPENGL_ERROR();
-    glVertexAttribPointer(color_location, 3, GL_FLOAT, GL_FALSE, 0, 0);TEST_OPENGL_ERROR();
-    glEnableVertexAttribArray(color_location);TEST_OPENGL_ERROR();
-
-    /*glBindVertexArray(vao_id);TEST_OPENGL_ERROR();
-    glBindBuffer(GL_ARRAY_BUFFER, normal_VBO);TEST_OPENGL_ERROR();*/
-
-
-}
-
 int main(int argc, char *argv[]){
 
     initGlut(argc, argv);
@@ -229,7 +190,6 @@ int main(int argc, char *argv[]){
     program_id = my_program->program_id;
 
     fixUniforms();
-    init_VBO();
 
     glutMainLoop();
     return 0;

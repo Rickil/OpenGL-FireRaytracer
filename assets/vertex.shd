@@ -9,7 +9,7 @@ uniform mat4 worldToProj_matrix;
 
 void main()
 {
-    float scale = 1.0f;
+    float scale = 1f;
     color = vec4(vColor,1.0);
     gl_Position = worldToProj_matrix * vec4((vPosition * scale), 1.0);
 }

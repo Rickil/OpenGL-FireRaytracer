@@ -11,12 +11,12 @@ class Fire {
 public:
     std::vector<Particle> particles;
 
-
     void update(GLuint program_id){
 
         //update particles buffers
         for (Particle particle : particles){
             particle.updateVAO(program_id);
+            particle.draw();
         }
     }
 
@@ -24,11 +24,6 @@ public:
     Fire(unsigned int nbParticles, Vector3 color){
         for (unsigned int i = 0; i < nbParticles; i++){
             Particle particle(color);
-
-            //init vao
-            glGenBuffers(1, &(particle.vao));
-
-            //init particles
             particles.push_back(particle);
         }
     }

@@ -31,12 +31,12 @@ public:
         color_buffer = color.toArray();
 
         //init vao
-        glGenVertexArrays(1, &vao);
-        glBindVertexArray(vao);
+        glGenVertexArrays(1, &vao);TEST_OPENGL_ERROR();
+        glBindVertexArray(vao);TEST_OPENGL_ERROR();
 
         //init vbos
-        glGenBuffers(1, &vertex_VBO);
-        glGenBuffers(1, &color_VBO);
+        glGenBuffers(1, &vertex_VBO);TEST_OPENGL_ERROR();
+        glGenBuffers(1, &color_VBO);TEST_OPENGL_ERROR();
     }
 
     void updateVAO(GLuint program_id){
@@ -48,16 +48,26 @@ public:
         glBindVertexArray(vao);
 
         //update vertex vbo
-        glBindBuffer(GL_ARRAY_BUFFER, vertex_VBO);
+        glBindBuffer(GL_ARRAY_BUFFER, vertex_VBO);TEST_OPENGL_ERROR();
         glBufferData(GL_ARRAY_BUFFER, vertex_buffer.size()*sizeof(float), vertex_buffer.data(), GL_DYNAMIC_DRAW);
-        glVertexAttribPointer(vertex_location, 3, GL_FLOAT, GL_FALSE, 0, 0);
-        glEnable(vertex_location);
+        TEST_OPENGL_ERROR();
+        glVertexAttribPointer(vertex_location, 3, GL_FLOAT, GL_FALSE, 0, 0);TEST_OPENGL_ERROR();
+        glEnable(vertex_location);TEST_OPENGL_ERROR();
 
         //update color vbo
-        glBindBuffer(GL_ARRAY_BUFFER, color_VBO);
+        glBindBuffer(GL_ARRAY_BUFFER, color_VBO);TEST_OPENGL_ERROR();
         glBufferData(GL_ARRAY_BUFFER, color_buffer.size()*sizeof(float), color_buffer.data(), GL_DYNAMIC_DRAW);
-        glVertexAttribPointer(color_location, 3, GL_FLOAT, GL_FALSE, 0, 0);
-        glEnable(color_location);
+        TEST_OPENGL_ERROR();
+        glVertexAttribPointer(color_location, 3, GL_FLOAT, GL_FALSE, 0, 0);TEST_OPENGL_ERROR();
+        glEnable(color_location);TEST_OPENGL_ERROR();
+    }
+
+    void draw(){
+        //bind current vao
+        glBindVertexArray(vao);TEST_OPENGL_ERROR();
+
+        //draw particle
+        glDrawArrays(GL_TRIANGLES, 0, vertex_buffer.size());TEST_OPENGL_ERROR();
     }
 
 };
