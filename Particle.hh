@@ -16,8 +16,6 @@ public:
     std::vector<float> vertex_buffer;
     std::vector<float> color_buffer;
 
-    int n = 0;
-
     Particle(Vector3 &color) : color(color) {}
 
     void init(){
@@ -44,8 +42,6 @@ public:
     }
 
     void updateVAO(GLuint program_id){
-        std::cout << n << "\n";
-        n++;
         //get vertex location
         GLint vertex_location = glGetAttribLocation(program_id,"vPosition");TEST_OPENGL_ERROR();
         GLint color_location = glGetAttribLocation(program_id,"vColor");TEST_OPENGL_ERROR();

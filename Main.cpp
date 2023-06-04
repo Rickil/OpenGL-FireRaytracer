@@ -33,6 +33,7 @@ void update(int value){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);TEST_OPENGL_ERROR();
     fire.update(program_id);
     glutPostRedisplay();
+    glutTimerFunc(FPS, update, value+1);
 }
 
 void window_resize(int width, int height) {
