@@ -3,10 +3,14 @@
 
 #include "Vector3.hh"
 
-class Particule {
+class Particle {
 public:
     Vector3 position;
+    Vector3 velocity;
     Vector3 color;
+    float life;
+
+    explicit Particle(const Vector3 &color) : color(color) {}
 };
 
 

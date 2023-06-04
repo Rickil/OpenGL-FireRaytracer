@@ -1,9 +1,8 @@
 #include "program.hh"
 #include "Transformations.hh"
-#include "vertex.hh"
-//#include "object_vbo.hh"
 #include "Camera.hh"
 #include "ObjLoader.hh"
+#include "Particle.hh"
 
 GLuint vao_id;
 GLuint program_id;
