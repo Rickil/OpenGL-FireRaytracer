@@ -198,7 +198,7 @@ int main(int argc, char *argv[]){
 
     glutMainLoop();*/
 
-    tifo::rgb24_image* image = tifo::load_image("assets/Flame_Particle.tga");
+    tifo::rgb24_image* image = tifo::load_image("assets/lighting.tga");
 
     return 0;
 }
