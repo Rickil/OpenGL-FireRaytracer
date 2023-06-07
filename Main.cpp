@@ -3,6 +3,7 @@
 #include "Camera.hh"
 #include "ObjLoader.hh"
 #include "Fire.hh"
+#include "image_io.hh"
 
 GLuint program_id;
 Camera camera;
@@ -10,9 +11,9 @@ Vector2 mouse = {-1,-1};
 matrix4 MVP;
 int resolution = 800;
 float FPS = 1000/60;
-Fire fire(1, Vector3(1,0.5,0.5));
+//Fire fire(10, Vector3(1,0.5,0.5));
 
-matrix4 getWorldToProjMatrix(){
+/*matrix4 getWorldToProjMatrix(){
 
     // Create the matrices
     matrix4 view_matrix;
@@ -176,11 +177,11 @@ void fixUniforms(){
     MVP = getWorldToProjMatrix();
 
     glUniformMatrix4fv(worldToProj_matrix_location, 1, GL_FALSE, &(MVP.m[0][0]));TEST_OPENGL_ERROR();
-}
+}*/
 
 int main(int argc, char *argv[]){
 
-    float a = 2;
+    /*float a = 2;
 
     initGlut(argc, argv);
     initGlew();
@@ -195,6 +196,9 @@ int main(int argc, char *argv[]){
     fixUniforms();
     fire.init();
 
-    glutMainLoop();
+    glutMainLoop();*/
+
+    tifo::rgb24_image* image = tifo::load_image("assets/Flame_Particle.tga");
+
     return 0;
 }
