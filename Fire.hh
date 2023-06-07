@@ -8,7 +8,7 @@
 #include <vector>
 #include <cstdlib>
 
-#define NUMBEROFPARTICLES 500
+#define NUMBEROFPARTICLES 1500
 
 class Fire {
 public:
@@ -53,6 +53,8 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);TEST_OPENGL_ERROR();
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);TEST_OPENGL_ERROR();
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);TEST_OPENGL_ERROR();
+
+        glBindVertexArray(0);TEST_OPENGL_ERROR();
     }
 
     void update() {
@@ -60,7 +62,7 @@ public:
         // (they are not in the camera field at this distance)
         std::fill_n(positions,NUMBEROFPARTICLES*3,10000);
 
-        if (particles.size() < NUMBEROFPARTICLES - 6)
+        if (NUMBEROFPARTICLES >= 6 && particles.size() < NUMBEROFPARTICLES - 6)
         {
             for (int i = 0; i < 6; i++)
             {

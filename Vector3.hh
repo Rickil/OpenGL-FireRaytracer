@@ -61,10 +61,17 @@ public:
         z+=v.z;
     }
 
+
     void operator-=(Vector3 v){
         x-=v.x;
         y-=v.y;
         z-=v.z;
+    }
+
+    void operator*=(float v){
+        x*=v;
+        y*=v;
+        z*=v;
     }
 
     Vector3 operator*(float value){
