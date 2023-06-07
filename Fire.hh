@@ -3,6 +3,7 @@
 
 #include "Particle.hh"
 #include "ObjLoader.hh"
+#include "TGA.hh"
 #include <GL/gl.h>
 #include <vector>
 #include <cstdlib>
@@ -18,17 +19,40 @@ public:
     unsigned int deltaTime;
 
 
-    Fire(){
-        //init vao id, vbo id, and initial buffer
-        glGenVertexArrays(1, &vao);
-        glBindVertexArray(vao);
-
-        glGenBuffers(1, &vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, NUMBEROFPARTICLES*3*sizeof(float), &positions[0], GL_DYNAMIC_DRAW);
-
+    Fire(GLuint program_id){
         //init first particle
         particles.push_back(new Particle());
+
+        //init vao id, vbo id, and initial buffer
+        glGenVertexArrays(1, &vao);TEST_OPENGL_ERROR();
+        glBindVertexArray(vao);TEST_OPENGL_ERROR();
+
+        glGenBuffers(1, &vbo);TEST_OPENGL_ERROR();
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);TEST_OPENGL_ERROR();
+        glBufferData(GL_ARRAY_BUFFER, NUMBEROFPARTICLES*3*sizeof(float), &positions[0], GL_DYNAMIC_DRAW);TEST_OPENGL_ERROR();
+
+        //init texture
+        Tga texture("assets/Flame_Particle.tga");
+        GLuint texture_id;
+        GLint tex_location;
+
+        GLint texture_units, combined_texture_units;
+        glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &texture_units);TEST_OPENGL_ERROR();
+        glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &combined_texture_units);TEST_OPENGL_ERROR();
+        std::cout << "Limit 1 " <<  texture_units << " limit 2 " << combined_texture_units << std::endl;
+
+        glGenTextures(1, &texture_id);TEST_OPENGL_ERROR();
+        glActiveTexture(GL_TEXTURE0);TEST_OPENGL_ERROR();
+        glBindTexture(GL_TEXTURE_2D,texture_id);TEST_OPENGL_ERROR();
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.GetWidth(), texture.GetHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, texture.GetPixels().data());TEST_OPENGL_ERROR();
+        tex_location = glGetUniformLocation(program_id, "texture_sampler");TEST_OPENGL_ERROR();;
+        glUniform1i(tex_location,0);TEST_OPENGL_ERROR();
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);TEST_OPENGL_ERROR();
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);TEST_OPENGL_ERROR();
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);TEST_OPENGL_ERROR();
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);TEST_OPENGL_ERROR();
     }
 
     void update() {
@@ -60,23 +84,23 @@ public:
 
 
         //update the vertex buffer
-        glBindVertexArray(vao);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, NUMBEROFPARTICLES*3*sizeof(float), &positions[0], GL_DYNAMIC_DRAW);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0 );
-        glBindVertexArray(0);
+        glBindVertexArray(vao);TEST_OPENGL_ERROR();
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);TEST_OPENGL_ERROR();
+        glBufferData(GL_ARRAY_BUFFER, NUMBEROFPARTICLES*3*sizeof(float), &positions[0], GL_DYNAMIC_DRAW);TEST_OPENGL_ERROR();
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0 );TEST_OPENGL_ERROR();
+        glBindVertexArray(0);TEST_OPENGL_ERROR();
     }
 
    void draw(){
        //disable the depth mask in order to stop depth writes and thus blending artifacts while keeping the flame from drawing over other objects
        glDepthMask(false);
        //bind the VAO and draw it
-       glBindVertexArray(vao);
-       glEnableVertexAttribArray(0);
-       glDrawArrays(GL_POINTS, 0, NUMBEROFPARTICLES);
+       glBindVertexArray(vao);TEST_OPENGL_ERROR();
+       glEnableVertexAttribArray(0);TEST_OPENGL_ERROR();
+       glDrawArrays(GL_POINTS, 0, NUMBEROFPARTICLES);TEST_OPENGL_ERROR();
        //unbind appropriate data
-       glDisableVertexAttribArray(0);
-       glBindVertexArray(0);
+       glDisableVertexAttribArray(0);TEST_OPENGL_ERROR();
+       glBindVertexArray(0);TEST_OPENGL_ERROR();
        //re-enable the depth mask
        glDepthMask(true);
    }

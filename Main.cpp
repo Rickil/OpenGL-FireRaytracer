@@ -3,7 +3,7 @@
 #include "Camera.hh"
 #include "ObjLoader.hh"
 #include "Fire.hh"
-#include "image_io.hh"
+#include "TGA.hh"
 
 GLuint program_id;
 Camera camera;
@@ -11,9 +11,9 @@ Vector2 mouse = {-1,-1};
 matrix4 MVP;
 int resolution = 800;
 float FPS = 1000/60;
-//Fire fire(10, Vector3(1,0.5,0.5));
+Fire* fire = nullptr;
 
-/*matrix4 getWorldToProjMatrix(){
+matrix4 getWorldToProjMatrix(){
 
     // Create the matrices
     matrix4 view_matrix;
@@ -31,8 +31,8 @@ float FPS = 1000/60;
 }
 
 void update(int value){
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);TEST_OPENGL_ERROR();
-    fire.update(program_id);
+    fire->update();
+    std::cout << fire->particles.size() << '\n';
     glutPostRedisplay();
     glutTimerFunc(FPS, update, value+1);
 }
@@ -123,6 +123,8 @@ void keyboardFunc(unsigned char key, int x, int y){
 }
 
 void display() {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);TEST_OPENGL_ERROR();
+    fire->draw();
     glutSwapBuffers();
 }
 
@@ -153,9 +155,9 @@ bool initGlew(){
 
 bool init_gl(){
     glEnable(GL_DEPTH_TEST);TEST_OPENGL_ERROR();
+    glEnable(GL_PROGRAM_POINT_SIZE);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);TEST_OPENGL_ERROR();
     //glEnable(GL_CULL_FACE);TEST_OPENGL_ERROR();
-    glEnable(GL_DEPTH_TEST);
     glClearColor(0.4,0.4,0.4,1.0);TEST_OPENGL_ERROR();
     glPixelStorei(GL_UNPACK_ALIGNMENT,1);
     glPixelStorei(GL_PACK_ALIGNMENT,1);
@@ -177,11 +179,9 @@ void fixUniforms(){
     MVP = getWorldToProjMatrix();
 
     glUniformMatrix4fv(worldToProj_matrix_location, 1, GL_FALSE, &(MVP.m[0][0]));TEST_OPENGL_ERROR();
-}*/
+}
 
 int main(int argc, char *argv[]){
-
-    /*float a = 2;
 
     initGlut(argc, argv);
     initGlew();
@@ -194,11 +194,13 @@ int main(int argc, char *argv[]){
     program_id = my_program->program_id;
 
     fixUniforms();
-    fire.init();
 
-    glutMainLoop();*/
+    fire = new Fire(program_id);
 
-    tifo::rgb24_image* image = tifo::load_image("assets/lighting.tga");
+    glutMainLoop();
+
+    Tga image("assets/Flame_Particle.tga");
+    std::cout << image.HasAlphaChannel();
 
     return 0;
 }
