@@ -51,6 +51,10 @@ public:
         }
     }
 
+    static float Magnitude(Vector3 v1){
+        return sqrt(v1.x*v1.x + v1.y*v1.y + v1.z*v1.z);
+    }
+
     std::vector<float> toArray(){
         return {x, y, z};
     }
@@ -66,6 +70,10 @@ public:
         x-=v.x;
         y-=v.y;
         z-=v.z;
+    }
+
+    Vector3 operator-(Vector3 v){
+        return {x-v.x, y-v.y, z-v.z};
     }
 
     void operator*=(float v){

@@ -14,6 +14,24 @@ public:
     std::vector<float> normal_buffer;
     std::vector<float> uv_buffer;
 
+    GLuint vao;
+    GLuint vertex_vbo;
+    GLuint normal_vbo;
+    GLuint uv_vbo;
+
+    GLuint program_id;
+
+    ObjLoader(GLuint program_id){
+        this->program_id = program_id;
+        //init vao id, vbo id, and initial buffers
+        glGenVertexArrays(1, &vao);TEST_OPENGL_ERROR();
+        glBindVertexArray(vao);TEST_OPENGL_ERROR();
+
+        glGenBuffers(1, &vertex_vbo);TEST_OPENGL_ERROR();
+        glGenBuffers(1, &normal_vbo);TEST_OPENGL_ERROR();
+        glGenBuffers(1, &uv_vbo);TEST_OPENGL_ERROR();
+    }
+
     int nbObjects = 0;
 
     void load(const char* path){
@@ -97,6 +115,31 @@ public:
             normal_buffer.push_back(normal.x);
             normal_buffer.push_back(normal.y);
             normal_buffer.push_back(normal.z);
+        }
+
+        //fill buffers
+        glBindVertexArray(vao);TEST_OPENGL_ERROR();
+        if (!vertex_buffer.empty()) {
+            glBindBuffer(GL_ARRAY_BUFFER, vertex_vbo);
+            TEST_OPENGL_ERROR();
+            glBufferData(GL_ARRAY_BUFFER, vertex_buffer.size() * sizeof(float), vertex_buffer.data(), GL_STATIC_DRAW);
+            TEST_OPENGL_ERROR();
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0 );TEST_OPENGL_ERROR();
+        }//else if (!normal_buffer.em)
+        glBindVertexArray(0);TEST_OPENGL_ERROR();
+    }
+
+    void draw(){
+        GLuint color_location = glGetUniformLocation(program_id, "color");TEST_OPENGL_ERROR();
+        glUniform3f(color_location, 1.0,1.0,0.0);
+        if (!vertex_buffer.empty()){
+            //bind the VAO and draw it
+            glBindVertexArray(vao);TEST_OPENGL_ERROR();
+            glEnableVertexAttribArray(0);TEST_OPENGL_ERROR();
+            glDrawArrays(GL_TRIANGLES, 0, vertex_buffer.size());TEST_OPENGL_ERROR();
+            //unbind appropriate data
+            glDisableVertexAttribArray(0);TEST_OPENGL_ERROR();
+            glBindVertexArray(0);TEST_OPENGL_ERROR();
         }
     }
 };

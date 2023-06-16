@@ -4,14 +4,16 @@
 #include "ObjLoader.hh"
 #include "Fire.hh"
 #include "TGA.hh"
+#include "Scene.hh"
 
 GLuint program_id;
 Camera camera;
 Vector2 mouse = {-1,-1};
 matrix4 MVP;
+int previousTime = glutGet(GLUT_ELAPSED_TIME);
 int resolution = 800;
 float FPS = 1000/60;
-Fire* fire = nullptr;
+Scene* scene = nullptr;
 
 matrix4 getWorldToProjMatrix(){
 
@@ -31,8 +33,10 @@ matrix4 getWorldToProjMatrix(){
 }
 
 void update(int value){
-    fire->update();
-    std::cout << fire->particles.size() << '\n';
+    //fire->deltaTime = glutGet(GLUT_ELAPSED_TIME) - previousTime;
+    scene->update(glutGet(GLUT_ELAPSED_TIME) - previousTime);
+    previousTime = glutGet(GLUT_ELAPSED_TIME);
+    //std::cout << fire->particles.size() << '\n';
     glutPostRedisplay();
     glutTimerFunc(FPS, update, value+1);
 }
@@ -124,7 +128,7 @@ void keyboardFunc(unsigned char key, int x, int y){
 
 void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);TEST_OPENGL_ERROR();
-    fire->draw();
+    scene->draw();
     glutSwapBuffers();
 }
 
@@ -186,6 +190,7 @@ int main(int argc, char *argv[]){
     initGlut(argc, argv);
     initGlew();
     init_gl();
+    previousTime = glutGet(GLUT_ELAPSED_TIME);
 
     std::string vertex_shader_src = "assets/vertex.shd";
     std::string fragment_shader_src = "assets/fragment.shd";
@@ -195,7 +200,8 @@ int main(int argc, char *argv[]){
 
     fixUniforms();
 
-    fire = new Fire(program_id);
+    scene = new Scene(program_id);
+    scene->loadScene("assets/untitled.obj");
 
     glutMainLoop();
 
