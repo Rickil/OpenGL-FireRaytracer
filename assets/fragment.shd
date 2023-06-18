@@ -9,5 +9,4 @@ out vec4 fragColor;
 void main()
 {
     fragColor = texture(texture_sampler, texCoord);// Sample the texture using the texture coordinates
-    fragColor *= fragColor.a;
 }

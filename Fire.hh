@@ -39,8 +39,8 @@ public:
         glBufferData(GL_ARRAY_BUFFER, NUMBEROFPARTICLES*3*sizeof(float), &positions[0], GL_DYNAMIC_DRAW);TEST_OPENGL_ERROR();
 
         // Enable blending
-        /*glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);*/
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         //init texture
         Tga texture("assets/Flame_Particle.tga");
