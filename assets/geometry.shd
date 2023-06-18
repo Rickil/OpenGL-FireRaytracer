@@ -5,6 +5,7 @@ layout(triangle_strip) out;
 layout(max_vertices = 4) out;
 
 out vec2 texCoord;
+out vec4 eyePosition;
 
 uniform vec3 camera;
 uniform mat4 worldToProj_matrix;
@@ -19,26 +20,26 @@ void main()
     pos -= (right*0.25);
     gl_Position = worldToProj_matrix* vec4(pos,1.0);
     texCoord = vec2(0,0);
-    //eyePosition =  vec4(pos,1.0);
+    eyePosition =  vec4(pos,1.0);
     EmitVertex();
 
     pos += (up*0.5);
     gl_Position =  worldToProj_matrix* vec4(pos,1.0);
     texCoord = vec2(0,1.0);
-    //eyePosition =  vec4(pos,1.0);
+    eyePosition =  vec4(pos,1.0);
     EmitVertex();
 
     pos -= (up*0.5);
     pos += (right*0.5);
     gl_Position =  worldToProj_matrix* vec4(pos,1.0);
     texCoord = vec2(1.0,0);
-    //eyePosition = vec4(pos,1.0);
+    eyePosition = vec4(pos,1.0);
     EmitVertex();
 
     pos += (up*0.5);
     gl_Position =  worldToProj_matrix* vec4(pos,1.0);
     texCoord = vec2(1.0,1.0);
-    //eyePosition = vec4(pos,1.0);
+    eyePosition = vec4(pos,1.0);
     EmitVertex();
 
     EndPrimitive();
