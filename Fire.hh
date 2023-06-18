@@ -9,7 +9,7 @@
 #include <vector>
 #include <cstdlib>
 
-#define NUMBEROFPARTICLES 1500
+#define NUMBEROFPARTICLES 3000
 
 class Fire {
 public:

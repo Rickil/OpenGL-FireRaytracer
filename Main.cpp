@@ -102,6 +102,7 @@ void mouseFunc(int x, int y){
 
 void keyboardFunc(unsigned char key, int x, int y){
     GLint worldToProj_matrix_location = glGetUniformLocation(program_id,"worldToProj_matrix");TEST_OPENGL_ERROR();
+    GLint camera_location = glGetUniformLocation(program_id,"camera");TEST_OPENGL_ERROR();
     float step = 0.1;
     if (key == 'd'){
         camera.pos += vectorialProduct(camera.target, camera.up).normalize()*step;
@@ -119,8 +120,9 @@ void keyboardFunc(unsigned char key, int x, int y){
         camera.pos.y -= step;
     }
 
-    MVP = getWorldToProjMatrix();
+    glUniform3f(camera_location, camera.pos.x, camera.pos.y, camera.pos.z);
 
+    MVP = getWorldToProjMatrix();
     glUniformMatrix4fv(worldToProj_matrix_location, 1, GL_FALSE, &(MVP.m[0][0]));TEST_OPENGL_ERROR();
     //glutPostRedisplay();
 
@@ -178,10 +180,12 @@ void fixUniforms(){
 
     //get the locations
     GLint worldToProj_matrix_location = glGetUniformLocation(program_id,"worldToProj_matrix");TEST_OPENGL_ERROR();
+    GLint camera_location = glGetUniformLocation(program_id,"camera");TEST_OPENGL_ERROR();
 
     //fix the uniforms
-    MVP = getWorldToProjMatrix();
+    glUniform3f(camera_location, camera.pos.x, camera.pos.y, camera.pos.z);
 
+    MVP = getWorldToProjMatrix();
     glUniformMatrix4fv(worldToProj_matrix_location, 1, GL_FALSE, &(MVP.m[0][0]));TEST_OPENGL_ERROR();
 }
 
