@@ -55,13 +55,16 @@ public:
     program(GLuint program_id){ this->program_id = program_id;}
     ~program(){}
 
-    static program* make_program(std::string& vertex_shader_src, std::string& fragment_shader_src) {
+    static program* make_program(std::string& vertex_shader_src, std::string& geometry_shader_src, std::string& fragment_shader_src) {
         //load shaders in strings
         std::string vertex_src = load(vertex_shader_src);
+        std::string geometry_src = load(geometry_shader_src);
         std::string fragment_src = load(fragment_shader_src);
         char *vertex_shd_src = (char*)std::malloc(vertex_src.length()*sizeof(char));
+        char *geometry_shd_src = (char*)std::malloc(geometry_src.length()*sizeof(char));
         char *fragment_shd_src = (char*)std::malloc(fragment_src.length()*sizeof(char));
         vertex_src.copy(vertex_shd_src,vertex_src.length());
+        geometry_src.copy(geometry_shd_src,geometry_src.length());
         fragment_src.copy(fragment_shd_src,fragment_src.length());
 
 
@@ -80,6 +83,19 @@ public:
             std::cout << "SUCCESS::SHADER::FRAGMENT::COMPILATION_SUCCESS " << infoLog << std::endl;
         }
 
+        //compile geometry shader
+        unsigned int geometry_shader_id = glCreateShader(GL_GEOMETRY_SHADER);TEST_OPENGL_ERROR();
+        glShaderSource(geometry_shader_id, 1, (const GLchar**)&(geometry_shd_src), NULL);TEST_OPENGL_ERROR();
+        glCompileShader(geometry_shader_id);TEST_OPENGL_ERROR();
+        glGetShaderiv(geometry_shader_id, GL_COMPILE_STATUS, &success);TEST_OPENGL_ERROR();
+        if (!success) {
+            glGetShaderInfoLog(geometry_shader_id, 512, NULL, infoLog);
+            std::cout << "ERROR::SHADER::GEOMETRY::COMPILATION_FAILED " << infoLog << std::endl;
+        } else {
+            glGetShaderInfoLog(geometry_shader_id, 512, NULL, infoLog);
+            std::cout << "SUCCESS::SHADER::GEOMETRY::COMPILATION_SUCCESS " << infoLog << std::endl;
+        }
+
        //compile vertex shader
        unsigned int vertex_shader_id = glCreateShader(GL_VERTEX_SHADER);
         glShaderSource(vertex_shader_id, 1, (const GLchar**)&(vertex_shd_src), NULL);
@@ -96,6 +112,7 @@ public:
         //link shaders
         unsigned int program_id = glCreateProgram();
         glAttachShader(program_id, vertex_shader_id);TEST_OPENGL_ERROR();
+        glAttachShader(program_id, geometry_shader_id);TEST_OPENGL_ERROR();
         glAttachShader(program_id, fragment_shader_id);TEST_OPENGL_ERROR();
         glLinkProgram(program_id);TEST_OPENGL_ERROR();
         glGetProgramiv(program_id, GL_LINK_STATUS, &success);

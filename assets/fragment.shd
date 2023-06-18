@@ -1,13 +1,13 @@
 #version 450
 
-in vec4 objectColor;
+in vec2 texCoord;
 
 uniform sampler2D texture_sampler;
 
-out vec4 outputColor;
+out vec4 fragColor;
 
 void main()
 {
-    //fragColor = texture(texture_sampler, gl_PointCoord);
-    outputColor = objectColor;
+    fragColor = texture(texture_sampler, texCoord);// Sample the texture using the texture coordinates
+    fragColor *= fragColor.a;
 }

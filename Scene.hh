@@ -7,18 +7,18 @@
 
 class Scene {
 public:
-    ObjLoader* objLoader;
+    //ObjLoader* objLoader;
     Fire* fire;
     GLuint program_id;
 
     Scene(GLuint program_id){
         this->program_id = program_id;
         fire = new Fire(program_id);
-        objLoader = new ObjLoader(program_id);
+        //objLoader = new ObjLoader(program_id);
     }
 
     void loadScene(const char* path){
-        objLoader->load(path);
+        //objLoader->load(path);
     }
 
     void update(int deltaTime){
@@ -28,7 +28,7 @@ public:
 
     void draw(){
         fire->draw();
-        objLoader->draw();
+        //objLoader->draw();
     }
 
 };

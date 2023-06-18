@@ -18,23 +18,14 @@ public:
     std::vector<Particle*> particles;
     std::vector<Particle*> m_particlesInRange;
     float positions[NUMBEROFPARTICLES*3];
-    float colors[NUMBEROFPARTICLES*3];
     GLuint program_id;
     GLuint vao;
     GLuint vbo;
-    GLuint color_vbo;
     unsigned int deltaTime;
 
 
     Fire(GLuint program_id){
         this->program_id = program_id;
-
-        //init color array
-        for (int i=0; i < NUMBEROFPARTICLES*3; i+=3){
-            colors[i] = 1.0;
-            colors[i+1] = 0;
-            colors[i+2] = 0;
-        }
 
         //init first particle
         particles.push_back(new Particle());
@@ -47,32 +38,31 @@ public:
         glBindBuffer(GL_ARRAY_BUFFER, vbo);TEST_OPENGL_ERROR();
         glBufferData(GL_ARRAY_BUFFER, NUMBEROFPARTICLES*3*sizeof(float), &positions[0], GL_DYNAMIC_DRAW);TEST_OPENGL_ERROR();
 
-        /*glGenBuffers(1, &color_vbo);TEST_OPENGL_ERROR();
-        glBindBuffer(GL_ARRAY_BUFFER, color_vbo);TEST_OPENGL_ERROR();
-        glBufferData(GL_ARRAY_BUFFER, NUMBEROFPARTICLES*3*sizeof(float), &colors[0], GL_DYNAMIC_DRAW);TEST_OPENGL_ERROR();*/
+        // Enable blending
+        /*glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);*/
 
         //init texture
         Tga texture("assets/Flame_Particle.tga");
         GLuint texture_id;
-        GLint tex_location;
 
         GLint texture_units, combined_texture_units;
         glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &texture_units);TEST_OPENGL_ERROR();
         glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &combined_texture_units);TEST_OPENGL_ERROR();
         std::cout << "Limit 1 " <<  texture_units << " limit 2 " << combined_texture_units << std::endl;
 
-        glGenTextures(1, &texture_id);TEST_OPENGL_ERROR();
         glActiveTexture(GL_TEXTURE0);TEST_OPENGL_ERROR();
+        glGenTextures(1, &texture_id);TEST_OPENGL_ERROR();
         glBindTexture(GL_TEXTURE_2D,texture_id);TEST_OPENGL_ERROR();
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.GetWidth(), texture.GetHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, texture.GetPixels().data());TEST_OPENGL_ERROR();
-        tex_location = glGetUniformLocation(program_id, "texture_sampler");TEST_OPENGL_ERROR();;
-        glUniform1i(tex_location,0);TEST_OPENGL_ERROR();
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA, texture.GetWidth(), texture.GetHeight(), 0, GL_BGRA, GL_UNSIGNED_BYTE, texture.GetPixels().data());TEST_OPENGL_ERROR();
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);TEST_OPENGL_ERROR();
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);TEST_OPENGL_ERROR();
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);TEST_OPENGL_ERROR();
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);TEST_OPENGL_ERROR();
+
+        glGenerateMipmap(GL_TEXTURE_2D);TEST_OPENGL_ERROR();
 
         glBindVertexArray(0);TEST_OPENGL_ERROR();
     }
@@ -82,9 +72,9 @@ public:
         // (they are not in the camera field at this distance)
         std::fill_n(positions,NUMBEROFPARTICLES*3,10000);
 
-        if (NUMBEROFPARTICLES >= 6 && particles.size() < NUMBEROFPARTICLES - 6)
+        if (NUMBEROFPARTICLES >= 10 && particles.size() < NUMBEROFPARTICLES - 10)
         {
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < 10; i++)
             {
                 particles.push_back(new Particle);
             }
@@ -123,24 +113,6 @@ public:
         m_root->DestroyTree();
         delete m_root;
 
-        /*for (unsigned int i = 0; i < particles.size(); i++){
-            particles[i]->update(deltaTime);
-
-            if (particles[i]->lifetime <= 0){
-                delete particles[i];
-                particles.erase(particles.begin() + i);
-                i--;
-            }else{
-                positions[i*3] = particles[i]->position.x;
-                positions[(i*3)+1] = particles[i]->position.y;
-                positions[(i*3)+2] = particles[i]->position.z;
-
-                colors[i*3] = 1.0;
-                colors[(i*3)+1] = (200-particles[i]->lifetime)/255.0f;
-                colors[(i*3)+2] = 0;
-            }
-        }*/
-
         GLint color_location = glGetAttribLocation(program_id,"color");TEST_OPENGL_ERROR();
 
         //update the vertex buffer
@@ -148,20 +120,14 @@ public:
         glBindBuffer(GL_ARRAY_BUFFER, vbo);TEST_OPENGL_ERROR();
         glBufferData(GL_ARRAY_BUFFER, NUMBEROFPARTICLES*3*sizeof(float), &positions[0], GL_DYNAMIC_DRAW);TEST_OPENGL_ERROR();
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0 );TEST_OPENGL_ERROR();
-
-        //update the color buffer
-        /*glBindBuffer(GL_ARRAY_BUFFER, color_vbo);TEST_OPENGL_ERROR();
-        glBufferData(GL_ARRAY_BUFFER, NUMBEROFPARTICLES*3*sizeof(float), &colors[0], GL_DYNAMIC_DRAW);TEST_OPENGL_ERROR();
-        glVertexAttribPointer(color_location, 3, GL_FLOAT, GL_FALSE, 0, 0 );TEST_OPENGL_ERROR();*/
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
         glBindVertexArray(0);TEST_OPENGL_ERROR();
     }
 
    void draw(){
-       GLuint color_location = glGetUniformLocation(program_id, "color");TEST_OPENGL_ERROR();
-       glUniform3f(color_location, 1.0,0.0,0.0);
        //disable the depth mask in order to stop depth writes and thus blending artifacts while keeping the flame from drawing over other objects
-       //glDepthMask(false);
+       glDepthMask(false);
        //bind the VAO and draw it
        glBindVertexArray(vao);TEST_OPENGL_ERROR();
        glEnableVertexAttribArray(0);TEST_OPENGL_ERROR();
@@ -171,6 +137,7 @@ public:
        glBindVertexArray(0);TEST_OPENGL_ERROR();
        //re-enable the depth mask
        glDepthMask(true);
+       glEnableVertexAttribArray(0);
    }
 };
 

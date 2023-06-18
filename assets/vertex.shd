@@ -2,16 +2,10 @@
 
 layout(location = 0) in vec3 vPosition;
 
-//in vec3 color;
-
-uniform vec3 color;
 uniform mat4 worldToProj_matrix;
-
-out vec4 objectColor;
 
 void main()
 {
-    gl_PointSize = 10;
+    gl_PointSize = 1;
     gl_Position = worldToProj_matrix * vec4(vPosition, 1.0);
-    objectColor = vec4(color, 1.0);
 }

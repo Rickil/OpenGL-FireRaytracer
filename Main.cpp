@@ -36,7 +36,7 @@ void update(int value){
     //fire->deltaTime = glutGet(GLUT_ELAPSED_TIME) - previousTime;
     scene->update(glutGet(GLUT_ELAPSED_TIME) - previousTime);
     previousTime = glutGet(GLUT_ELAPSED_TIME);
-    //std::cout << fire->particles.size() << '\n';
+    //std::cout << scene->fire->particles.size() << '\n';
     glutPostRedisplay();
     glutTimerFunc(FPS, update, value+1);
 }
@@ -193,8 +193,9 @@ int main(int argc, char *argv[]){
     previousTime = glutGet(GLUT_ELAPSED_TIME);
 
     std::string vertex_shader_src = "assets/vertex.shd";
+    std::string geometry_shader_src = "assets/geometry.shd";
     std::string fragment_shader_src = "assets/fragment.shd";
-    auto my_program = program::make_program(vertex_shader_src, fragment_shader_src);
+    auto my_program = program::make_program(vertex_shader_src, geometry_shader_src, fragment_shader_src);
     my_program->use();
     program_id = my_program->program_id;
 
@@ -206,7 +207,8 @@ int main(int argc, char *argv[]){
     glutMainLoop();
 
     Tga image("assets/Flame_Particle.tga");
-    std::cout << image.HasAlphaChannel();
+    //Tga image("assets/lighting.tga");
+    std::cout << "Has alpha channel : " << image.HasAlphaChannel() << "\n";
 
     return 0;
 }
