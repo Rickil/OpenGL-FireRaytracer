@@ -34,10 +34,10 @@ public:
     }
 
     void draw(){
-        if (fire)
-            fire->draw();
         if (objLoader)
             objLoader->draw();
+        if (fire)
+            fire->draw();
     }
 
 };

@@ -213,21 +213,25 @@ int main(int argc, char *argv[]){
     init_gl();
     previousTime = glutGet(GLUT_ELAPSED_TIME);
 
-    //create program associated with fire
-    std::string vertex_shader_src = "assets/particleVertex.shd";
-    std::string geometry_shader_src = "assets/particleGeometry.shd";
-    std::string fragment_shader_src = "assets/particleFragment.shd";
-    auto my_program = program::make_program(vertex_shader_src, geometry_shader_src, fragment_shader_src);
-    programs.push_back(my_program);
+    //create fire program
+    std::string vertex_shader_src = "assets/Fire/vertex.shd";
+    std::string geometry_shader_src = "assets/Fire/geometry.shd";
+    std::string fragment_shader_src = "assets/Fire/fragment.shd";
+    programs.push_back(program::make_program(vertex_shader_src, geometry_shader_src, fragment_shader_src));
+
+    //create scene program
+    vertex_shader_src = "assets/Scene/vertex.shd";
+    fragment_shader_src = "assets/Scene/fragment.shd";
+    programs.push_back(program::make_program(vertex_shader_src, fragment_shader_src));
 
     fixUniforms();
 
-    scene = new Scene(my_program, nullptr);
-    //scene->loadScene("assets/untitled.obj");
+    scene = new Scene(programs[0], programs[1]);
+    scene->loadScene("assets/Scene/untitled.obj");
 
     glutMainLoop();
 
-    Tga image("assets/Flame_Particle.tga");
+    Tga image("assets/Fire/Flame_Particle.tga");
     //Tga image("assets/lighting.tga");
     std::cout << "Has alpha channel : " << image.HasAlphaChannel() << "\n";
 

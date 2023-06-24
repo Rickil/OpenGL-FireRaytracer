@@ -44,7 +44,7 @@ public:
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         //init texture
-        Tga texture("assets/Flame_Particle.tga");
+        Tga texture("assets/Fire/Flame_Particle.tga");
         GLuint texture_id;
 
         GLint texture_units, combined_texture_units;
