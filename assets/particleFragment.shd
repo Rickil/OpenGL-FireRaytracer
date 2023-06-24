@@ -10,9 +10,6 @@ out vec4 fColour;
 
 void main()
 {
-    //fragColor = texture(texture_sampler, texCoord);// Sample the texture using the texture coordinates
-    //fragColor.xyz *= fragColor.a;
-
     vec4 worldPosCentre = vec4(0,0,0,1);
     vec4 eyeSpaceCentre = /*viewMat * */worldPosCentre;
     vec3 toCentre = eyePosition.xyz;//eyeSpaceCentre.xyz - eyePosition.xyz;

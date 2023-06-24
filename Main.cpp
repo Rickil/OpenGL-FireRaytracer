@@ -6,7 +6,7 @@
 #include "TGA.hh"
 #include "Scene.hh"
 
-GLuint program_id;
+std::vector<program*> programs;
 Camera camera;
 Vector2 mouse = {-1,-1};
 matrix4 MVP;
@@ -47,17 +47,20 @@ void window_resize(int width, int height) {
 
     //change camera settings to adapt new window size
     camera.setRatio(width, height);
-    GLint worldToProj_matrix_location = glGetUniformLocation(program_id,"worldToProj_matrix");TEST_OPENGL_ERROR();
-    matrix4 worldToProj_matrix = getWorldToProjMatrix();
 
-    glUniformMatrix4fv(worldToProj_matrix_location, 1, GL_FALSE, &(worldToProj_matrix.m[0][0]));TEST_OPENGL_ERROR();
-    //glutPostRedisplay();
+    for (program* program : programs) {
+        program->use();
+        GLint worldToProj_matrix_location = glGetUniformLocation(program->program_id, "worldToProj_matrix");
+        TEST_OPENGL_ERROR();
+        matrix4 worldToProj_matrix = getWorldToProjMatrix();
+
+        glUniformMatrix4fv(worldToProj_matrix_location, 1, GL_FALSE, &(worldToProj_matrix.m[0][0]));
+        TEST_OPENGL_ERROR();
+    }
 }
 
 void mouseFunc(int x, int y){
     //std::cout << x << ", " << y << std::endl;
-
-    GLint worldToProj_matrix_location = glGetUniformLocation(program_id,"worldToProj_matrix");TEST_OPENGL_ERROR();
 
     if (mouse.x == -1){
         mouse.x = x;
@@ -94,15 +97,20 @@ void mouseFunc(int x, int y){
     mouse.y = center;
     glutWarpPointer(center, center);
 
-    MVP = getWorldToProjMatrix();
 
-    glUniformMatrix4fv(worldToProj_matrix_location, 1, GL_FALSE, &(MVP.m[0][0]));TEST_OPENGL_ERROR();
-    //glutPostRedisplay();
+
+    for (program* program : programs) {
+        program->use();
+        GLint worldToProj_matrix_location = glGetUniformLocation(program->program_id, "worldToProj_matrix");
+        TEST_OPENGL_ERROR();
+        matrix4 worldToProj_matrix = getWorldToProjMatrix();
+
+        glUniformMatrix4fv(worldToProj_matrix_location, 1, GL_FALSE, &(worldToProj_matrix.m[0][0]));
+        TEST_OPENGL_ERROR();
+    }
 }
 
 void keyboardFunc(unsigned char key, int x, int y){
-    GLint worldToProj_matrix_location = glGetUniformLocation(program_id,"worldToProj_matrix");TEST_OPENGL_ERROR();
-    GLint camera_location = glGetUniformLocation(program_id,"camera");TEST_OPENGL_ERROR();
     float step = 0.1;
     if (key == 'd'){
         camera.pos += vectorialProduct(camera.target, camera.up).normalize()*step;
@@ -120,11 +128,17 @@ void keyboardFunc(unsigned char key, int x, int y){
         camera.pos.y -= step;
     }
 
-    glUniform3f(camera_location, camera.pos.x, camera.pos.y, camera.pos.z);
+    for (program* program : programs) {
+        program->use();
+        GLint worldToProj_matrix_location = glGetUniformLocation(program->program_id, "worldToProj_matrix");
+        GLint camera_location = glGetUniformLocation(program->program_id, "camera");
+        TEST_OPENGL_ERROR();
+        matrix4 worldToProj_matrix = getWorldToProjMatrix();
 
-    MVP = getWorldToProjMatrix();
-    glUniformMatrix4fv(worldToProj_matrix_location, 1, GL_FALSE, &(MVP.m[0][0]));TEST_OPENGL_ERROR();
-    //glutPostRedisplay();
+        glUniform3f(camera_location, camera.pos.x, camera.pos.y, camera.pos.z);
+        glUniformMatrix4fv(worldToProj_matrix_location, 1, GL_FALSE, &(worldToProj_matrix.m[0][0]));
+        TEST_OPENGL_ERROR();
+    }
 
 }
 
@@ -178,35 +192,38 @@ void fixUniforms(){
     newTarget.z = sin(rad(camera.yaw))*cos(rad(camera.pitch));
     camera.target = newTarget;
 
-    //get the locations
-    GLint worldToProj_matrix_location = glGetUniformLocation(program_id,"worldToProj_matrix");TEST_OPENGL_ERROR();
-    GLint camera_location = glGetUniformLocation(program_id,"camera");TEST_OPENGL_ERROR();
+    for (program* program : programs) {
+        program->use();
+        GLint worldToProj_matrix_location = glGetUniformLocation(program->program_id, "worldToProj_matrix");
+        GLint camera_location = glGetUniformLocation(program->program_id, "camera");
+        TEST_OPENGL_ERROR();
+        matrix4 worldToProj_matrix = getWorldToProjMatrix();
 
-    //fix the uniforms
-    glUniform3f(camera_location, camera.pos.x, camera.pos.y, camera.pos.z);
-
-    MVP = getWorldToProjMatrix();
-    glUniformMatrix4fv(worldToProj_matrix_location, 1, GL_FALSE, &(MVP.m[0][0]));TEST_OPENGL_ERROR();
+        glUniform3f(camera_location, camera.pos.x, camera.pos.y, camera.pos.z);
+        glUniformMatrix4fv(worldToProj_matrix_location, 1, GL_FALSE, &(worldToProj_matrix.m[0][0]));
+        TEST_OPENGL_ERROR();
+    }
 }
 
 int main(int argc, char *argv[]){
 
+    //initializations
     initGlut(argc, argv);
     initGlew();
     init_gl();
     previousTime = glutGet(GLUT_ELAPSED_TIME);
 
-    std::string vertex_shader_src = "assets/vertex.shd";
-    std::string geometry_shader_src = "assets/geometry.shd";
-    std::string fragment_shader_src = "assets/fragment.shd";
+    //create program associated with fire
+    std::string vertex_shader_src = "assets/particleVertex.shd";
+    std::string geometry_shader_src = "assets/particleGeometry.shd";
+    std::string fragment_shader_src = "assets/particleFragment.shd";
     auto my_program = program::make_program(vertex_shader_src, geometry_shader_src, fragment_shader_src);
-    my_program->use();
-    program_id = my_program->program_id;
+    programs.push_back(my_program);
 
     fixUniforms();
 
-    scene = new Scene(program_id);
-    scene->loadScene("assets/untitled.obj");
+    scene = new Scene(my_program, nullptr);
+    //scene->loadScene("assets/untitled.obj");
 
     glutMainLoop();
 

@@ -19,10 +19,11 @@ public:
     GLuint normal_vbo;
     GLuint uv_vbo;
 
-    GLuint program_id;
+    program* program;
 
-    ObjLoader(GLuint program_id){
-        this->program_id = program_id;
+    ObjLoader(class program* program){
+        this->program = program;
+        program->use();
         //init vao id, vbo id, and initial buffers
         glGenVertexArrays(1, &vao);TEST_OPENGL_ERROR();
         glBindVertexArray(vao);TEST_OPENGL_ERROR();
@@ -117,6 +118,7 @@ public:
             normal_buffer.push_back(normal.z);
         }
 
+        program->use();
         //fill buffers
         glBindVertexArray(vao);TEST_OPENGL_ERROR();
         if (!vertex_buffer.empty()) {
@@ -130,7 +132,8 @@ public:
     }
 
     void draw(){
-        GLuint color_location = glGetUniformLocation(program_id, "color");TEST_OPENGL_ERROR();
+        program->use();
+        GLuint color_location = glGetUniformLocation(program->program_id, "color");TEST_OPENGL_ERROR();
         glUniform3f(color_location, 1.0,1.0,0.0);
         if (!vertex_buffer.empty()){
             //bind the VAO and draw it

@@ -18,14 +18,15 @@ public:
     std::vector<Particle*> particles;
     std::vector<Particle*> m_particlesInRange;
     float positions[NUMBEROFPARTICLES*3];
-    GLuint program_id;
+    program* program;
     GLuint vao;
     GLuint vbo;
     unsigned int deltaTime;
 
 
-    Fire(GLuint program_id){
-        this->program_id = program_id;
+    Fire(class program* program){
+        this->program = program;
+        program->use();
 
         //init first particle
         particles.push_back(new Particle());
@@ -68,6 +69,7 @@ public:
     }
 
     void update() {
+        program->use();
         //fill positions array with 10000 in order to not show any unupdated particles
         // (they are not in the camera field at this distance)
         std::fill_n(positions,NUMBEROFPARTICLES*3,10000);
@@ -113,7 +115,7 @@ public:
         m_root->DestroyTree();
         delete m_root;
 
-        GLint color_location = glGetAttribLocation(program_id,"color");TEST_OPENGL_ERROR();
+        GLint color_location = glGetAttribLocation(program->program_id,"color");TEST_OPENGL_ERROR();
 
         //update the vertex buffer
         glBindVertexArray(vao);TEST_OPENGL_ERROR();
@@ -126,6 +128,7 @@ public:
     }
 
    void draw(){
+       program->use();
        //disable the depth mask in order to stop depth writes and thus blending artifacts while keeping the flame from drawing over other objects
        glDepthMask(false);
        //bind the VAO and draw it

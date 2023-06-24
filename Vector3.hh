@@ -83,7 +83,7 @@ public:
     }
 
     Vector3 operator*(float value){
-        return {x *= value,y*=value,z*=value};
+        return {x * value,y*value,z*value};
     }
 };
 

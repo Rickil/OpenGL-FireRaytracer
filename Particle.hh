@@ -48,7 +48,7 @@ public:
         //accelerate the particle
         velocity += acceleration * ((float)deltaTime / 1000.0f);
         //move the particle
-        position += velocity * ((float)deltaTime / 1000.0f)*100;
+        position += velocity * ((float)deltaTime / 1000.0f);
     }
 
 };
