@@ -115,8 +115,6 @@ public:
         m_root->DestroyTree();
         delete m_root;
 
-        GLint color_location = glGetAttribLocation(program->program_id,"color");TEST_OPENGL_ERROR();
-
         //update the vertex buffer
         glBindVertexArray(vao);TEST_OPENGL_ERROR();
         glBindBuffer(GL_ARRAY_BUFFER, vbo);TEST_OPENGL_ERROR();

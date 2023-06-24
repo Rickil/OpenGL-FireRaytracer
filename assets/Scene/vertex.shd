@@ -1,10 +1,37 @@
 #version 450
 
 layout(location = 0) in vec3 vPosition;
+in vec3 vNormal;
 
+uniform vec3 vColor;
 uniform mat4 worldToProj_matrix;
+uniform vec3 camera;
 
-void main()
-{
+uniform vec3 lightPositions[1500];  // Assuming a maximum number of lights
+uniform vec3 lightColor;
+uniform float lightIntensity;
+uniform int numLights;  // Number of active lights
+
+out vec3 color;
+
+void main() {
+    vec3 normal = normalize(vNormal);
+    vec3 ray = normalize(vPosition - camera);
+    vec3 reflected_ray = reflect(ray, normal);
+
+    vec3 totalLight = vec3(0.0);
+
+    //we get diffusion
+    for (int i = 0; i < numLights; i++) {
+        vec3 light_dir = normalize(lightPositions[i] - vPosition);
+
+        float coefDiffuse = clamp(dot(normal, light_dir), 0, 1) * lightIntensity;
+        float coefSpecular = clamp(dot(reflected_ray, light_dir), 0, 1) * lightIntensity;
+        float coef = coefDiffuse + coefSpecular;
+
+        totalLight += coef * lightColor;
+    }
+
+    color = totalLight * vColor;
     gl_Position = worldToProj_matrix * vec4(vPosition, 1.0);
 }

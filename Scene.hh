@@ -12,14 +12,14 @@ public:
     program* fire_program;
     program* objects_program;
 
-    Scene(program* fire_program, program* objects_program){
+    Scene(Camera* camera, program* fire_program, program* objects_program){
         this->fire_program = fire_program;
         this->objects_program = objects_program;
 
         if (fire_program)
             fire = new Fire(fire_program);
         if (objects_program)
-            objLoader = new ObjLoader(objects_program);
+            objLoader = new ObjLoader(objects_program, camera, fire);
     }
 
     void loadScene(const char* path){

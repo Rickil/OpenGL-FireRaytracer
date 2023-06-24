@@ -3,6 +3,7 @@
 
 #include "Vector3.hh"
 #include "Vector2.hh"
+#include "Fire.hh"
 #include <vector>
 #include <string>
 #include <stdexcept>
@@ -20,9 +21,28 @@ public:
     GLuint uv_vbo;
 
     program* program;
+    Camera* camera;
+    Fire* fire;
 
-    ObjLoader(class program* program){
+    void updateLightUniform(){
+        GLuint lightPositions_location = glGetUniformLocation(program->program_id, "lightPositions");TEST_OPENGL_ERROR();
+        GLuint numLights_location = glGetUniformLocation(program->program_id, "numLights");TEST_OPENGL_ERROR();
+
+        std::vector<float> lightPositions;
+        for (auto particle : fire->particles){
+            lightPositions.push_back(particle->position.x);
+            lightPositions.push_back(particle->position.y);
+            lightPositions.push_back(particle->position.z);
+        }
+
+        glUniform1i(numLights_location, fire->particles.size());
+        glUniform3fv(lightPositions_location, fire->particles.size(), lightPositions.data());
+    }
+
+    ObjLoader(class program* program, Camera* camera, Fire* fire){
         this->program = program;
+        this->camera = camera;
+        this->fire = fire;
         program->use();
         //init vao id, vbo id, and initial buffers
         glGenVertexArrays(1, &vao);TEST_OPENGL_ERROR();
@@ -31,6 +51,18 @@ public:
         glGenBuffers(1, &vertex_vbo);TEST_OPENGL_ERROR();
         glGenBuffers(1, &normal_vbo);TEST_OPENGL_ERROR();
         glGenBuffers(1, &uv_vbo);TEST_OPENGL_ERROR();
+
+        //init uniforms
+        GLuint color_location = glGetUniformLocation(program->program_id, "vColor");TEST_OPENGL_ERROR();
+        GLuint lightColor_location = glGetUniformLocation(program->program_id, "lightColor");TEST_OPENGL_ERROR();
+        GLuint lightIntensity_location = glGetUniformLocation(program->program_id, "lightIntensity");TEST_OPENGL_ERROR();
+
+
+        glUniform3f(color_location, 1.0,1.0,0.0);
+        glUniform3f(lightColor_location, 1.0,0.63,0.0);
+        glUniform1f(lightIntensity_location, 0.001);
+
+        updateLightUniform();
     }
 
     int nbObjects = 0;
@@ -121,20 +153,29 @@ public:
         program->use();
         //fill buffers
         glBindVertexArray(vao);TEST_OPENGL_ERROR();
+        GLint vertex_location = glGetAttribLocation(program->program_id,"vPosition");TEST_OPENGL_ERROR();
+        GLint normal_location = glGetAttribLocation(program->program_id,"vNormal");TEST_OPENGL_ERROR();
         if (!vertex_buffer.empty()) {
             glBindBuffer(GL_ARRAY_BUFFER, vertex_vbo);
             TEST_OPENGL_ERROR();
             glBufferData(GL_ARRAY_BUFFER, vertex_buffer.size() * sizeof(float), vertex_buffer.data(), GL_STATIC_DRAW);
             TEST_OPENGL_ERROR();
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0 );TEST_OPENGL_ERROR();
-        }//else if (!normal_buffer.em)
+            glVertexAttribPointer(vertex_location, 3, GL_FLOAT, GL_FALSE, 0, 0 );TEST_OPENGL_ERROR();
+            glEnableVertexAttribArray(vertex_location);TEST_OPENGL_ERROR();
+        }if (!normal_buffer.empty()) {
+            glBindBuffer(GL_ARRAY_BUFFER, normal_vbo);
+            TEST_OPENGL_ERROR();
+            glBufferData(GL_ARRAY_BUFFER, normal_buffer.size() * sizeof(float), normal_buffer.data(), GL_STATIC_DRAW);
+            TEST_OPENGL_ERROR();
+            glVertexAttribPointer(normal_location, 3, GL_FLOAT, GL_FALSE, 0, 0 );TEST_OPENGL_ERROR();
+            glEnableVertexAttribArray(normal_location);TEST_OPENGL_ERROR();
+        }
         glBindVertexArray(0);TEST_OPENGL_ERROR();
     }
 
     void draw(){
         program->use();
-        GLuint color_location = glGetUniformLocation(program->program_id, "color");TEST_OPENGL_ERROR();
-        glUniform3f(color_location, 1.0,1.0,0.0);
+        updateLightUniform();
         if (!vertex_buffer.empty()){
             //bind the VAO and draw it
             glBindVertexArray(vao);TEST_OPENGL_ERROR();
