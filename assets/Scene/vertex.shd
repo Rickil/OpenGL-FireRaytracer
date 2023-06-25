@@ -42,6 +42,6 @@ vec3 applyReflection(){
 }
 
 void main() {
-    color = applyReflection(vertexColor, reflectedColor);
+    color = applyReflection();
     gl_Position = worldToProj_matrix * vec4(vPosition, 1.0);
 }
