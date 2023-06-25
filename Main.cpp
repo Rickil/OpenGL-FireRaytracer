@@ -9,10 +9,9 @@
 std::vector<program*> programs;
 Camera camera;
 Vector2 mouse = {-1,-1};
-matrix4 MVP;
 int previousTime = glutGet(GLUT_ELAPSED_TIME);
 int resolution = 800;
-float FPS = 1000/60;
+float TPS = 1000/60;
 Scene* scene = nullptr;
 
 matrix4 getWorldToProjMatrix(){
@@ -38,7 +37,7 @@ void update(int value){
     previousTime = glutGet(GLUT_ELAPSED_TIME);
     //std::cout << scene->fire->particles.size() << '\n';
     glutPostRedisplay();
-    glutTimerFunc(FPS, update, value+1);
+    glutTimerFunc(TPS, update, value+1);
 }
 
 void window_resize(int width, int height) {
@@ -111,7 +110,7 @@ void mouseFunc(int x, int y){
 }
 
 void keyboardFunc(unsigned char key, int x, int y){
-    float step = 0.1;
+    float step = 0.25;
     if (key == 'd'){
         camera.pos += vectorialProduct(camera.target, camera.up).normalize()*step;
     }else if(key == 'q'){
@@ -161,7 +160,7 @@ bool initGlut(int &argc, char *argv[]){
     glutKeyboardFunc(keyboardFunc);
     glutPassiveMotionFunc(mouseFunc);
     glutSetCursor(GLUT_CURSOR_NONE);
-    glutTimerFunc(FPS, update, 0);
+    glutTimerFunc(TPS, update, 0);
     return true;
 }
 
@@ -177,8 +176,8 @@ bool init_gl(){
     glEnable(GL_DEPTH_TEST);TEST_OPENGL_ERROR();
     glEnable(GL_PROGRAM_POINT_SIZE);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);TEST_OPENGL_ERROR();
-    //glEnable(GL_CULL_FACE);TEST_OPENGL_ERROR();
-    glClearColor(0.4,0.4,0.4,1.0);TEST_OPENGL_ERROR();
+    glEnable(GL_CULL_FACE);TEST_OPENGL_ERROR();
+    glClearColor(0,0,0,0);TEST_OPENGL_ERROR();
     glPixelStorei(GL_UNPACK_ALIGNMENT,1);
     glPixelStorei(GL_PACK_ALIGNMENT,1);
     return true;

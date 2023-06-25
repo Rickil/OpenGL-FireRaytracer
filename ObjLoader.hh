@@ -12,17 +12,94 @@
 class ObjLoader {
 public:
     std::vector<float> vertex_buffer;
+    std::vector<float> vertex_reflected_buffer;
     std::vector<float> normal_buffer;
     std::vector<float> uv_buffer;
 
     GLuint vao;
     GLuint vertex_vbo;
+    GLuint vertex_reflected_vbo;
     GLuint normal_vbo;
     GLuint uv_vbo;
 
     program* program;
     Camera* camera;
     Fire* fire;
+
+    //make isInsideTriangle function
+    bool isInsideTriangle(Vector3 point, Vector3 v1, Vector3 v2, Vector3 v3){
+        Vector3 v1v2 = v2 - v1;
+        Vector3 v2v3 = v3 - v2;
+        Vector3 v3v1 = v1 - v3;
+        Vector3 pointv1 = point - v1;
+        Vector3 pointv2 = point - v2;
+        Vector3 pointv3 = point - v3;
+        if (v1v2.cross(pointv1).dot(v1v2.cross(v2v3)) > 0 &&
+            v2v3.cross(pointv2).dot(v2v3.cross(v3v1)) > 0 &&
+            v3v1.cross(pointv3).dot(v3v1.cross(v1v2)) > 0){
+            return true;
+        }
+        return false;
+    }
+
+    //make the checkCollisionTriangle function
+    Vector3 checkCollisionTriangle(Vector3 v1, Vector3 v2, Vector3 v3, Vector3 reflectedDirection){
+        Vector3 collisionPoint;
+        Vector3 normal = (v2 - v1).cross(v3 - v1).normalize();
+        float t = (v1 - camera->pos).dot(normal) / reflectedDirection.dot(normal);
+        if (t > 0){
+            collisionPoint = camera->pos + reflectedDirection * t;
+            if (isInsideTriangle(collisionPoint, v1, v2, v3)){
+                return collisionPoint;
+            }
+        }
+        return {0,0,0};
+    }
+
+
+    //for all the vertex in vertex_buffer, calculate reflection and check a collision
+    // considering that vertex_buffer make triangles
+    Vector3 checkCollision(Vector3 vertex, Vector3 normal){
+        Vector3 cameraToVertex = vertex - camera->pos;
+        Vector3 reflectedDirection = cameraToVertex - normal * 2 * cameraToVertex.dot(normal);
+        reflectedDirection = reflectedDirection.normalize();
+        Vector3 reflected_position;
+
+        for (int i = 0; i < vertex_buffer.size(); i+=9){
+            Vector3 v1 = {vertex_buffer[i], vertex_buffer[i+1], vertex_buffer[i+2]};
+            Vector3 v2 = {vertex_buffer[i+3], vertex_buffer[i+4], vertex_buffer[i+5]};
+            Vector3 v3 = {vertex_buffer[i+6], vertex_buffer[i+7], vertex_buffer[i+8]};
+
+            //check collision with the triangle made by v1, v2, v3 and the reflected direction vector
+            //and get collision point
+            Vector3 collisionPoint = checkCollisionTriangle(v1, v2, v3, reflectedDirection);
+            if (collisionPoint.magnitude() > 0 && (reflected_position.magnitude() == 0 || (collisionPoint - vertex).magnitude() < (reflected_position - vertex).magnitude())){
+                reflected_position = collisionPoint;
+            }
+        }
+        return reflected_position;
+    }
+
+    void updateReflectionBuffer(){
+        vertex_reflected_buffer.clear();
+        for (int i = 0; i < vertex_buffer.size(); i+=3){
+            Vector3 vertex = {vertex_buffer[i], vertex_buffer[i+1], vertex_buffer[i+2]};
+            Vector3 normal = {normal_buffer[i], normal_buffer[i+1], normal_buffer[i+2]};
+            Vector3 reflected_position = checkCollision(vertex, normal);
+            if (reflected_position.magnitude() > 0){
+                vertex_reflected_buffer.push_back(reflected_position.x);
+                vertex_reflected_buffer.push_back(reflected_position.y);
+                vertex_reflected_buffer.push_back(reflected_position.z);
+            }else{
+                vertex_reflected_buffer.push_back(0);
+                vertex_reflected_buffer.push_back(0);
+                vertex_reflected_buffer.push_back(0);
+            }
+        }
+
+        glBindBuffer(GL_ARRAY_BUFFER, vertex_reflected_vbo);TEST_OPENGL_ERROR();
+        glBufferData(GL_ARRAY_BUFFER, vertex_reflected_buffer.size() * sizeof(float), vertex_reflected_buffer.data(), GL_DYNAMIC_DRAW);TEST_OPENGL_ERROR();
+    }
 
     void updateLightUniform(){
         GLuint lightPositions_location = glGetUniformLocation(program->program_id, "lightPositions");TEST_OPENGL_ERROR();
@@ -49,6 +126,7 @@ public:
         glBindVertexArray(vao);TEST_OPENGL_ERROR();
 
         glGenBuffers(1, &vertex_vbo);TEST_OPENGL_ERROR();
+        glGenBuffers(1, &vertex_reflected_vbo);TEST_OPENGL_ERROR();
         glGenBuffers(1, &normal_vbo);TEST_OPENGL_ERROR();
         glGenBuffers(1, &uv_vbo);TEST_OPENGL_ERROR();
 
@@ -60,7 +138,7 @@ public:
 
         glUniform3f(color_location, 1.0,1.0,0.0);
         glUniform3f(lightColor_location, 1.0,0.63,0.0);
-        glUniform1f(lightIntensity_location, 0.001);
+        glUniform1f(lightIntensity_location, 0.0005);
 
         updateLightUniform();
     }
@@ -162,6 +240,12 @@ public:
             TEST_OPENGL_ERROR();
             glVertexAttribPointer(vertex_location, 3, GL_FLOAT, GL_FALSE, 0, 0 );TEST_OPENGL_ERROR();
             glEnableVertexAttribArray(vertex_location);TEST_OPENGL_ERROR();
+
+            //enable vertex_reflected
+            GLint vertex_reflected_location = glGetAttribLocation(program->program_id,"vReflected");TEST_OPENGL_ERROR();
+            glBindBuffer(GL_ARRAY_BUFFER, vertex_reflected_vbo);TEST_OPENGL_ERROR();
+            glVertexAttribPointer(vertex_reflected_location, 3, GL_FLOAT, GL_FALSE, 0, 0 );TEST_OPENGL_ERROR();
+            glEnableVertexAttribArray(vertex_reflected_location);TEST_OPENGL_ERROR();
         }if (!normal_buffer.empty()) {
             glBindBuffer(GL_ARRAY_BUFFER, normal_vbo);
             TEST_OPENGL_ERROR();
@@ -175,6 +259,7 @@ public:
 
     void draw(){
         program->use();
+        updateReflectionBuffer();
         updateLightUniform();
         if (!vertex_buffer.empty()){
             //bind the VAO and draw it

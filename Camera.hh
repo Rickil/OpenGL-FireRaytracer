@@ -12,7 +12,7 @@ public:
     float right = 1;
     float bottom = -1;
     float top = 1;
-    float z_near = 5;
+    float z_near = 2;
     float z_far = 9999;
     float yaw = 225;
     float pitch = -35;

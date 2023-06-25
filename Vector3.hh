@@ -43,12 +43,24 @@ public:
         return  {x,y,z};
     }
 
+    Vector3 cross(Vector3 v){
+        return {y*v.z - z*v.y, z*v.x - x*v.z, x*v.y - y*v.x};
+    }
+
+    float dot(Vector3 v){
+        return {x*v.x + y*v.y + z*v.z};
+    }
+
     static void translateVerticesOnVector(std::vector<float>& vertices, Vector3 center){
         for (int i = 0; i < vertices.size(); i+=3){
             vertices[i] += center.x;
             vertices[i+1] += center.y;
             vertices[i+2] += center.z;
         }
+    }
+
+    float magnitude(){
+        return sqrt(x*x + y*y + z*z);
     }
 
     static float Magnitude(Vector3 v1){
@@ -74,6 +86,10 @@ public:
 
     Vector3 operator-(Vector3 v){
         return {x-v.x, y-v.y, z-v.z};
+    }
+
+    Vector3 operator+(Vector3 v){
+        return {x+v.x, y+v.y, z+v.z};
     }
 
     void operator*=(float v){

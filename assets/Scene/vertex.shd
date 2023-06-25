@@ -1,9 +1,11 @@
 #version 450
 
 layout(location = 0) in vec3 vPosition;
+in vec3 vReflected;
 in vec3 vNormal;
 
 uniform vec3 vColor;
+uniform vec3 vColorReflected;
 uniform mat4 worldToProj_matrix;
 uniform vec3 camera;
 
@@ -14,7 +16,7 @@ uniform int numLights;  // Number of active lights
 
 out vec3 color;
 
-void main() {
+vec3 applyDiffusionAndSpecular(vec3 position){
     vec3 normal = normalize(vNormal);
     vec3 ray = normalize(vPosition - camera);
     vec3 reflected_ray = reflect(ray, normal);
@@ -27,11 +29,19 @@ void main() {
 
         float coefDiffuse = clamp(dot(normal, light_dir), 0, 1) * lightIntensity;
         float coefSpecular = clamp(dot(reflected_ray, light_dir), 0, 1) * lightIntensity;
-        float coef = coefDiffuse + coefSpecular;
+        float coef = coefDiffuse + pow(coefSpecular,10);
 
         totalLight += coef * lightColor;
     }
 
-    color = totalLight * vColor;
+    return totalLight;
+}
+
+vec3 applyReflection(){
+    return applyDiffusionAndSpecular(vPosition)*vColor + applyDiffusionAndSpecular(vReflected)*vColorReflected;
+}
+
+void main() {
+    color = applyReflection(vertexColor, reflectedColor);
     gl_Position = worldToProj_matrix * vec4(vPosition, 1.0);
 }
