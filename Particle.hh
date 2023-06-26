@@ -19,7 +19,7 @@ public:
         position = Vector3((((float) rand() / (float) RAND_MAX) - 0.5),0,(((float) rand() / (float) RAND_MAX) - 0.5));
     }
 
-    void update(std::vector<Particle*> &_particlesInRange, unsigned int deltaTime){
+    void update(std::vector<Particle*> &particlesInRange, unsigned int deltaTime){
 
 
         Vector3 acceleration;
@@ -28,17 +28,17 @@ public:
         //lifetime of the particle decreased
         lifetime--;
         //for each particle in range move towards or away from it depending on density
-        for (unsigned int i = 0; i < _particlesInRange.size(); i++)
+        for (unsigned int i = 0; i < particlesInRange.size(); i++)
         {
-            if (_particlesInRange[i] != this)
+            if (particlesInRange[i] != this)
             {
-                if (_particlesInRange.size() > 20)
+                if (particlesInRange.size() > 20)
                 {
-                    acceleration += (position - _particlesInRange[i]->position) * 0.02f;
+                    acceleration += (position - particlesInRange[i]->position) * 0.02f;
                 }
                 else
                 {
-                    acceleration += (position - _particlesInRange[i]->position) * -2.0f;
+                    acceleration += (position - particlesInRange[i]->position) * -2.0f;
                 }
             }
         }

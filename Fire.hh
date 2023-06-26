@@ -13,7 +13,7 @@
 
 class Fire {
 public:
-    KDTree* m_root;
+    KDTree* root;
     Vector3 position;
     std::vector<Particle*> particles;
     std::vector<Particle*> m_particlesInRange;
@@ -84,26 +84,28 @@ public:
 
         float maxDist = 100000.0f;
         //generate a new KDTree of all the particles
-        m_root = new KDTree(2,particles);
-        //for every particle
+        root = new KDTree(2,particles);
+
         for (unsigned int i = 0; i < particles.size(); i++)
         {
-            //zero the vector of particles within range
+
             m_particlesInRange.clear();
-            //reset the maximum distance used in the Findm_particlesInRange() function
             maxDist = 100000.0f;
+
             //find the particles within a range of 0.3 units
-            m_root->FindParticlesInRange(0.3f,particles[i]->position,m_particlesInRange,&maxDist);
+            root->getNeighboursParticles(0.3f,particles[i]->position,m_particlesInRange,&maxDist);
+
             //update the particle
             particles[i]->update(m_particlesInRange, deltaTime);
-            //if the particle has reached the end of its lifetime delete it and step back a particle in order to not miss any out
+
+            //if the particle has reached the end of its lifetime delete it
             if (particles[i]->lifetime < 0)
             {
                 delete particles[i];
                 particles.erase(particles.begin()+i);
                 i--;
             }
-                //otherwise push it's position to the positions array
+            //otherwise push it's position to the positions array
             else
             {
                 positions[(i*3)] = particles[i]->position.x;
@@ -112,8 +114,8 @@ public:
             }
         }
         //delete the tree
-        m_root->DestroyTree();
-        delete m_root;
+        root->DestroyTree();
+        delete root;
 
         //update the vertex buffer
         glBindVertexArray(vao);TEST_OPENGL_ERROR();

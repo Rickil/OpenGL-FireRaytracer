@@ -10,18 +10,14 @@
 
 class KDTree {
 private:
-    int m_depth;
-    Particle* m_point;
-    KDTree* m_left;
-    KDTree* m_right;
+    int depth;
+    Particle* center;
+    KDTree* left;
+    KDTree* right;
 public:
-    KDTree(int _depth, std::vector<Particle*> _particles);
+    KDTree(int depth, std::vector<Particle*> particles);
     void DestroyTree();
-    void PrintTree(); //for debug only
-    int FindMedian(float _start, float _middle, float _end);
-    void Swap(std::vector<Particle*> _particles, int _index1, int _index2);
-    //magnitude function simply qorks out the squared magnitude of a vector
-    void FindParticlesInRange(float _range, Vector3 _position, std::vector<Particle*> &_particlesInRange, float* _largestDistanceInRange);
+    void getNeighboursParticles(float range, Vector3 position, std::vector<Particle*> &neighbours, float* largestDistanceInRange);
 };
 
 
