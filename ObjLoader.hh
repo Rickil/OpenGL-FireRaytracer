@@ -126,7 +126,7 @@ public:
         glBindVertexArray(vao);TEST_OPENGL_ERROR();
 
         glGenBuffers(1, &vertex_vbo);TEST_OPENGL_ERROR();
-        glGenBuffers(1, &vertex_reflected_vbo);TEST_OPENGL_ERROR();
+        //glGenBuffers(1, &vertex_reflected_vbo);TEST_OPENGL_ERROR();
         glGenBuffers(1, &normal_vbo);TEST_OPENGL_ERROR();
         glGenBuffers(1, &uv_vbo);TEST_OPENGL_ERROR();
 
@@ -242,10 +242,10 @@ public:
             glEnableVertexAttribArray(vertex_location);TEST_OPENGL_ERROR();
 
             //enable vertex_reflected
-            GLint vertex_reflected_location = glGetAttribLocation(program->program_id,"vReflected");TEST_OPENGL_ERROR();
+            /*GLint vertex_reflected_location = glGetAttribLocation(program->program_id,"vReflected");TEST_OPENGL_ERROR();
             glBindBuffer(GL_ARRAY_BUFFER, vertex_reflected_vbo);TEST_OPENGL_ERROR();
             glVertexAttribPointer(vertex_reflected_location, 3, GL_FLOAT, GL_FALSE, 0, 0 );TEST_OPENGL_ERROR();
-            glEnableVertexAttribArray(vertex_reflected_location);TEST_OPENGL_ERROR();
+            glEnableVertexAttribArray(vertex_reflected_location);TEST_OPENGL_ERROR();*/
         }if (!normal_buffer.empty()) {
             glBindBuffer(GL_ARRAY_BUFFER, normal_vbo);
             TEST_OPENGL_ERROR();
