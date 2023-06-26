@@ -27,7 +27,7 @@ public:
     Fire* fire;
 
     //make isInsideTriangle function
-    bool isInsideTriangle(Vector3 point, Vector3 v1, Vector3 v2, Vector3 v3){
+    /*bool isInsideTriangle(Vector3 point, Vector3 v1, Vector3 v2, Vector3 v3){
         Vector3 v1v2 = v2 - v1;
         Vector3 v2v3 = v3 - v2;
         Vector3 v3v1 = v1 - v3;
@@ -99,7 +99,7 @@ public:
 
         glBindBuffer(GL_ARRAY_BUFFER, vertex_reflected_vbo);TEST_OPENGL_ERROR();
         glBufferData(GL_ARRAY_BUFFER, vertex_reflected_buffer.size() * sizeof(float), vertex_reflected_buffer.data(), GL_DYNAMIC_DRAW);TEST_OPENGL_ERROR();
-    }
+    }*/
 
     void updateLightUniform(){
         GLuint lightPositions_location = glGetUniformLocation(program->program_id, "lightPositions");TEST_OPENGL_ERROR();
@@ -259,7 +259,7 @@ public:
 
     void draw(){
         program->use();
-        updateReflectionBuffer();
+        //updateReflectionBuffer();
         updateLightUniform();
         if (!vertex_buffer.empty()){
             //bind the VAO and draw it

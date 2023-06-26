@@ -226,7 +226,7 @@ int main(int argc, char *argv[]){
     fixUniforms();
 
     scene = new Scene(&camera, programs[0], programs[1]);
-    scene->loadScene("assets/Scene/scene.obj");
+    scene->loadScene("assets/Scene/Heavy.obj");
 
     glutMainLoop();
 

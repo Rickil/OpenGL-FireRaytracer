@@ -38,7 +38,7 @@ vec3 applyDiffusionAndSpecular(vec3 position){
 }
 
 vec3 applyReflection(){
-    return applyDiffusionAndSpecular(vPosition)*vColor + applyDiffusionAndSpecular(vReflected)*vColorReflected;
+    return applyDiffusionAndSpecular(vPosition)*vColor /*+ applyDiffusionAndSpecular(vReflected)*vColorReflected*/;
 }
 
 void main() {
