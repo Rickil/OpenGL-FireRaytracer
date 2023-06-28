@@ -5,7 +5,7 @@
 
 class Camera {
 public:
-    Vector3 pos = {10,10,10};
+    Vector3 pos = {13.4449,4.42506,-8.52895};
     Vector3 target = {0,0,0};
     Vector3 up = {0,1,0};
     float left = -1;
@@ -14,8 +14,8 @@ public:
     float top = 1;
     float z_near = 2;
     float z_far = 9999;
-    float yaw = 225;
-    float pitch = -35;
+    float yaw = 136.599;
+    float pitch = -6.80001;
 
     void setRatio(int width, int height){
         float ratio = (float)width/height;

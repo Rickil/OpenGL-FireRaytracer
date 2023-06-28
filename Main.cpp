@@ -36,6 +36,7 @@ void update(int value){
     scene->update(glutGet(GLUT_ELAPSED_TIME) - previousTime);
     previousTime = glutGet(GLUT_ELAPSED_TIME);
     //std::cout << scene->fire->particles.size() << '\n';
+    //std::cout << "yaw: " << camera.yaw << ", pitch: " << camera.pitch << " ("<< camera.pos.x << "," << camera.pos.y << "," << camera.pos.z << ")" << "\n";
     glutPostRedisplay();
     glutTimerFunc(TPS, update, value+1);
 }
@@ -176,7 +177,7 @@ bool init_gl(){
     glEnable(GL_DEPTH_TEST);TEST_OPENGL_ERROR();
     glEnable(GL_PROGRAM_POINT_SIZE);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);TEST_OPENGL_ERROR();
-    glEnable(GL_CULL_FACE);TEST_OPENGL_ERROR();
+    //glEnable(GL_CULL_FACE);TEST_OPENGL_ERROR();
     glClearColor(0,0,0,0);TEST_OPENGL_ERROR();
     glPixelStorei(GL_UNPACK_ALIGNMENT,1);
     glPixelStorei(GL_PACK_ALIGNMENT,1);

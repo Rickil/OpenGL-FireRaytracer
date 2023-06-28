@@ -77,11 +77,22 @@ public:
         z+=v.z;
     }
 
-
     void operator-=(Vector3 v){
         x-=v.x;
         y-=v.y;
         z-=v.z;
+    }
+
+    void operator/=(float v){
+        x/=v;
+        y/=v;
+        z/=v;
+    }
+
+    void operator*=(float v){
+        x*=v;
+        y*=v;
+        z*=v;
     }
 
     Vector3 operator-(Vector3 v){
@@ -92,14 +103,18 @@ public:
         return {x+v.x, y+v.y, z+v.z};
     }
 
-    void operator*=(float v){
-        x*=v;
-        y*=v;
-        z*=v;
-    }
-
     Vector3 operator*(float value){
         return {x * value,y*value,z*value};
+    }
+
+    static Vector3 Min(const Vector3& v1, const Vector3& v2)
+    {
+        return { std::min(v1.x, v2.x), std::min(v1.y, v2.y), std::min(v1.z, v2.z) };
+    }
+
+    static Vector3 Max(const Vector3& v1, const Vector3& v2)
+    {
+        return { std::max(v1.x, v2.x), std::max(v1.y, v2.y), std::max(v1.z, v2.z) };
     }
 };
 
