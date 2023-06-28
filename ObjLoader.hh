@@ -168,7 +168,7 @@ public:
             glEnableVertexAttribArray(vertex_location);TEST_OPENGL_ERROR();
 
             //init smart vertex buffer
-            KDTree kdTree = KDTree(50000, vertex_buffer);
+            KDTree kdTree = KDTree(1000, vertex_buffer);
             kdTree.fillSmart(smart_vertex_buffer);
 
             //init and enable vertex ssbo
