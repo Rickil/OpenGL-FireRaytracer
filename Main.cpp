@@ -231,9 +231,5 @@ int main(int argc, char *argv[]){
 
     glutMainLoop();
 
-    Tga image("assets/Fire/Flame_Particle.tga");
-    //Tga image("assets/lighting.tga");
-    std::cout << "Has alpha channel : " << image.HasAlphaChannel() << "\n";
-
     return 0;
 }

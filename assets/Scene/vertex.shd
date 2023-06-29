@@ -15,43 +15,53 @@ uniform int numLights;  // Number of active lights
 
 out vec3 color;
 
-const int MAX_COLLISIONS = 10;
+const int MAX_COLLISIONS = 5;
+
+//collisions will hold the index of the nbVertices in data
+//distances will hold the distances of each sphere to help the sorting
+uint[MAX_COLLISIONS] collisions;
+float[MAX_COLLISIONS] distances;
 
 layout(std430, binding = 0) buffer MyBuffer {
     float data[];
 };
 
-bool isInsideTriangle(vec3 point, vec3 v1, vec3 v2, vec3 v3) {
-    vec3 v1v2 = v2 - v1;
-    vec3 v2v3 = v3 - v2;
-    vec3 v3v1 = v1 - v3;
-    vec3 pointv1 = point - v1;
-    vec3 pointv2 = point - v2;
-    vec3 pointv3 = point - v3;
+vec3 checkCollisionTriangle(vec3 v1, vec3 v2, vec3 v3, vec3 ray) {
+    const float EPSILON = 0.0001;
 
-    if (dot(cross(v1v2, pointv1), cross(v1v2, v2v3)) > 0.0 &&
-    dot(cross(v2v3, pointv2), cross(v2v3, v3v1)) > 0.0 &&
-    dot(cross(v3v1, pointv3), cross(v3v1, v1v2)) > 0.0) {
-        return true;
+    //we get vector from camera center to triangle edges
+    vec3 edge1 = v2 - v1;
+    vec3 edge2 = v3 - v1;
+
+    vec3 h = cross(ray, edge2);
+    float a = dot(edge1, h);
+
+    if (abs(a) < EPSILON){
+        return vec3(0.0);
     }
 
-    return false;
-}
-
-vec3 checkCollisionTriangle(vec3 v1, vec3 v2, vec3 v3, vec3 reflectedDirection) {
-    vec3 collisionPoint;
-    vec3 normal = normalize(cross(v2 - v1, v3 - v1));
-    float t = dot(v1 - camera, normal) / dot(reflectedDirection, normal);
-
-    if (t > 0.0) {
-        collisionPoint = camera + reflectedDirection * t;
-
-        if (isInsideTriangle(collisionPoint, v1, v2, v3)) {
-            return collisionPoint;
-        }
+    float f = 1.0 / a;
+    vec3 s = ray - v1;
+    float u = dot(s,h)*f;
+    if (u < 0.0 || u > 1.0){
+        return vec3(0.0);
     }
 
-    return vec3(0.0);
+    vec3 q = cross(s, edge1);
+    float v = f * dot(ray, q);
+
+    // Check if the intersection point is outside the triangle
+    if (v < 0.0 || u + v > 1.0) {
+        return vec3(0.0); // Return zero vector indicating no intersection
+    }
+
+    float t = f * dot(edge2, q);
+    if (t > EPSILON){
+        vec3 intersectionPoint = v1 + u * edge1 + v * edge2;
+        return intersectionPoint;
+    }else{
+        return vec3(0.0);
+    }
 }
 
 bool checkSphereCollision(vec3 spherePosition, float radius, vec3 ray) {
@@ -76,14 +86,14 @@ bool checkSphereCollision(vec3 spherePosition, float radius, vec3 ray) {
     return false;  // No collision
 }
 
-void insert(float[MAX_COLLISIONS] arrD, uint[MAX_COLLISIONS] arrI, float distance, uint index, int size){
-    if (distance > arrD[size-1])
+void insert(float distance, uint index, int size){
+    if (distance > distances[size-1])
         return;
 
     int insertIndex = 0;
     // Find the index to insert the value
     for (int i = 0; i < size; i++) {
-        if (arrD[i] > distance) {
+        if (distances[i] > distance) {
             insertIndex = i;
             break;
         }
@@ -92,28 +102,28 @@ void insert(float[MAX_COLLISIONS] arrD, uint[MAX_COLLISIONS] arrI, float distanc
 
     // Shift elements to make room for the new value
     for (int i = size - 1; i >= insertIndex; i--) {
-        arrD[i] = arrD[i - 1];
-        arrI[i] = arrI[i - 1];
+        distances[i] = distances[i - 1];
+        collisions[i] = collisions[i - 1];
     }
 
     // Insert the value at the determined index
-    arrD[insertIndex] = distance;
-    arrI[insertIndex] = index;
+    distances[insertIndex] = distance;
+    collisions[insertIndex] = index;
 }
 
-void bubbleSort(float[MAX_COLLISIONS] arrD, uint[MAX_COLLISIONS] arrI,int size) {
+void bubbleSort(int size) {
     for (int i = 0; i < size - 1; ++i) {
         for (int j = 0; j < size - i - 1; ++j) {
-            if (arrD[j] > arrD[j + 1]) {
+            if (distances[j] > distances[j + 1]) {
                 //sort distances array
-                float temp = arrD[j];
-                arrD[j] = arrD[j + 1];
-                arrD[j + 1] = temp;
+                float temp = distances[j];
+                distances[j] = distances[j + 1];
+                distances[j + 1] = temp;
 
                 //sort indexes array
-                uint temp2 = arrI[j];
-                arrI[j] = arrI[j + 1];
-                arrI[j + 1] = temp2;
+                uint temp2 = collisions[j];
+                collisions[j] = collisions[j + 1];
+                collisions[j + 1] = temp2;
             }
         }
     }
@@ -124,15 +134,56 @@ float distance(vec3 p1, vec3 p2){
     return length(diff);
 }
 
+bool checkIsShadow(vec3 ray, vec3 vertex){
+
+    //get all the sphere in collision with reflection
+    //we keep only 10 of them, which are the 10 closest to vertex position
+    uint i = 0;
+    int nbCollisions = 0;
+    while (i < dataSize) {
+        vec3 nodeCenter = vec3(data[i],data[i+1],data[i+2]);
+        float nodeRadius = data[i+3];
+        if (checkSphereCollision(nodeCenter, nodeRadius, ray)){
+            float dist = distance(vertex, nodeCenter);
+            if (nbCollisions == 10){
+                bubbleSort(MAX_COLLISIONS);
+            }
+            if (nbCollisions < 10){
+                collisions[nbCollisions] = i+4;
+                distances[nbCollisions] = dist;
+            }else{
+                insert(dist, i+4, MAX_COLLISIONS);
+            }
+            nbCollisions++;
+        }
+        i += 5 + uint(data[i+4]);
+    }
+
+    for (uint i=0; i < MAX_COLLISIONS; i++){
+        //we get the index where the vertices start in data
+        //and how much of them we have
+        float nbVertices = data[collisions[i]];
+        bool foundIntersection = false;
+        for (uint j = 0; j < nbVertices; j+=9){
+            uint index = collisions[i]+1+j;
+            vec3 v1 = vec3(data[index], data[index + 1], data[index + 2]);
+            vec3 v2 = vec3(data[index + 3], data[index + 4], data[index + 5]);
+            vec3 v3 = vec3(data[index + 6], data[index + 7], data[index + 8]);
+
+            vec3 collisionPoint = checkCollisionTriangle(v1, v2, v3, ray);
+
+            if (length(collisionPoint) > 0.0) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 vec3 checkCollision(vec3 vertex, vec3 normal) {
     vec3 cameraToVertex = vertex - camera;
     vec3 reflectedDirection = normalize(cameraToVertex - normal * 2.0 * dot(cameraToVertex, normal));
     vec3 reflected_position = vec3(0.0);
-
-    //collisions will hold the index of the nbVertices in data
-    //distances will hold the distances of each sphere to help the sorting
-    uint[MAX_COLLISIONS] collisions;
-    float[MAX_COLLISIONS] distances;
 
     //get all the sphere in collision with reflection
     //we keep only 10 of them, which are the 10 closest to vPosition
@@ -144,13 +195,13 @@ vec3 checkCollision(vec3 vertex, vec3 normal) {
         if (checkSphereCollision(nodeCenter, nodeRadius, reflectedDirection)){
             float dist = distance(vPosition, nodeCenter);
             if (nbCollisions == 10){
-                bubbleSort(distances, collisions, MAX_COLLISIONS);
+                bubbleSort(MAX_COLLISIONS);
             }
             if (nbCollisions < 10){
                 collisions[nbCollisions] = i+4;
                 distances[nbCollisions] = dist;
             }else{
-                insert(distances, collisions, dist, i+4, MAX_COLLISIONS);
+                insert(dist, i+4, MAX_COLLISIONS);
             }
             nbCollisions++;
         }
@@ -184,78 +235,13 @@ vec3 checkCollision(vec3 vertex, vec3 normal) {
     return reflected_position;
 }
 
-/*vec3 checkCollision(vec3 vertex, vec3 normal) {
-    vec3 cameraToVertex = vertex - camera;
-    vec3 reflectedDirection = normalize(cameraToVertex - normal * 2.0 * dot(cameraToVertex, normal));
-    vec3 reflected_position;
-
-    // Temporary storage for sphere collisions
-    vec4[] sphereCollisions;
-
-    // Check collision with spheres
-    for (int i = 0; i < nbVertices; i += 6) {
-        vec3 sphereCenter = vec3(data[i], data[i + 1], data[i + 2]);
-        float sphereRadius = data[i + 3];
-
-        if (checkSphereCollision(sphereCenter, sphereRadius)) {
-            // Store sphere collision data (center, radius)
-            sphereCollisions.push_back(vec4(sphereCenter, sphereRadius));
-        }
-    }
-
-    // Sort sphere collisions based on distance to vPosition
-    for (int i = 0; i < sphereCollisions.length() - 1; i++) {
-        for (int j = 0; j < sphereCollisions.length() - i - 1; j++) {
-            vec4 collision1 = sphereCollisions[j];
-            vec4 collision2 = sphereCollisions[j + 1];
-
-            float dist1 = distance(vPosition, collision1.xyz);
-            float dist2 = distance(vPosition, collision2.xyz);
-
-            if (dist1 > dist2) {
-                sphereCollisions[j] = collision2;
-                sphereCollisions[j + 1] = collision1;
-            }
-        }
-    }
-
-    // Check collision with triangles in sorted sphere collisions
-    for (int i = 0; i < sphereCollisions.length(); i++) {
-        vec4 collision = sphereCollisions[i];
-        vec3 sphereCenter = collision.xyz;
-        float sphereRadius = collision.w;
-
-        // Iterate over triangle vertices in the node
-        int startIdx = int(data[int(collision.w + 4)]);
-        int numVertices = int(data[int(collision.w + 5)]);
-
-        for (int j = 0; j < numVertices; j += 3) {
-            vec3 v1 = vec3(data[startIdx + j], data[startIdx + j + 1], data[startIdx + j + 2]);
-            vec3 v2 = vec3(data[startIdx + j + 3], data[startIdx + j + 4], data[startIdx + j + 5]);
-            vec3 v3 = vec3(data[startIdx + j + 6], data[startIdx + j + 7], data[startIdx + j + 8]);
-
-            vec3 collisionPoint = checkCollisionTriangle(v1, v2, v3, reflectedDirection);
-
-            if (length(collisionPoint) > 0.0 && (length(reflected_position) == 0.0 || length(collisionPoint - vertex) < length(reflected_position - vertex))) {
-                reflected_position = collisionPoint;
-            }
-        }
-
-        // Early exit if collision found
-        if (length(reflected_position) > 0.0) {
-            break;
-        }
-    }
-
-    return reflected_position;
-}*/
-
 vec3 applyDiffusionAndSpecular(vec3 position){
     vec3 normal = normalize(vNormal);
     vec3 ray = normalize(vPosition - camera);
     vec3 reflected_ray = reflect(ray, normal);
 
     vec3 totalLight = vec3(0.0);
+    vec3 center = vec3(0.0);
 
     //we get diffusion
     for (int i = 0; i < numLights; i++) {
@@ -263,12 +249,18 @@ vec3 applyDiffusionAndSpecular(vec3 position){
 
         float coefDiffuse = clamp(dot(normal, light_dir), 0, 1) * lightIntensity;
         float coefSpecular = clamp(dot(reflected_ray, light_dir), 0, 1) * lightIntensity;
-        float coef = coefDiffuse + pow(coefSpecular,10);
+        float coef = coefDiffuse + pow(coefSpecular,1);
 
         totalLight += coef * lightColor;
+        center += lightPositions[i];
     }
+    center /= float(numLights);
 
-    return totalLight;
+    if(checkIsShadow(center-position, position)){
+        return vec3(0.0,0.0,1.0);
+    }else {
+        return totalLight;
+    }
 }
 
 vec3 applyReflection(){
