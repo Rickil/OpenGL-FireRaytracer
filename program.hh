@@ -11,7 +11,7 @@
 #define TEST_OPENGL_ERROR()\
   do {\
     GLenum err = glGetError();\
-    if (err != GL_NO_ERROR) std::cerr << "OpenGL ERROR!, line : " << __LINE__ << std::endl;\
+    if (err != GL_NO_ERROR) std::cerr << "OpenGL ERROR!, file: " << __FILE__ << ", line: " << __LINE__ << std::endl;\
     switch (err)\
     {\
     case GL_INVALID_ENUM:\

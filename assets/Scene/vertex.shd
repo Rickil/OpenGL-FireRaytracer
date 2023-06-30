@@ -2,6 +2,9 @@
 
 layout(location = 0) in vec3 vPosition;
 in vec3 vNormal;
+in vec3 uv;
+
+uniform sampler2DArray textureArray;
 
 uniform vec3 vColor;
 uniform mat4 worldToProj_matrix;
@@ -263,16 +266,22 @@ vec3 applyDiffusionAndSpecular(vec3 position){
     }
 }
 
-vec3 applyReflection(){
-    vec3 res = applyDiffusionAndSpecular(vPosition)*vColor;
-    vec3 reflection = checkCollision(vPosition, vNormal);
+vec3 applyReflection(vec3 uvColor){
+    vec3 res = applyDiffusionAndSpecular(vPosition)*uvColor;
+    /*vec3 reflection = checkCollision(vPosition, vNormal);
     if (any(notEqual(reflection, vec3(0.0)))){
         res += applyDiffusionAndSpecular(reflection)*vColor;
-    }
+    }*/
     return res;
 }
 
 void main() {
-    color = applyReflection();
+    vec4 uvColor;
+    if (uv.z != -1){
+        uvColor = texture(textureArray, uv);
+    }else{
+        uvColor = vec4(1.0,1.0,0.0,1.0);
+    }
+    color = applyReflection(uvColor.xyz);
     gl_Position = worldToProj_matrix * vec4(vPosition, 1.0);
 }

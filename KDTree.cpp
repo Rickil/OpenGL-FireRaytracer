@@ -180,6 +180,7 @@ void KDTree::DestroyTree()
         left->DestroyTree();
         delete left;
     }
+
 }
 
 //recursive function to find all the particles within a range of a particle

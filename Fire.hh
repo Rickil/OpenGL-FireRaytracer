@@ -88,7 +88,6 @@ public:
 
         for (unsigned int i = 0; i < particles.size(); i++)
         {
-
             m_particlesInRange.clear();
             maxDist = 100000.0f;
 

@@ -1,0 +1,137 @@
+# Blender 3.4.1 MTL File: 'CorrectedScene.blend'
+# www.blender.org
+
+newmtl Spruce.004
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.18039 0.341176 0.188235
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:\Dev\POGL\assets\textures\spruce\spruce_DiffuseOpacity.tga
+
+newmtl armchair
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.000771 0.146684 0.122702
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:\Dev\POGL\assets\textures\armchair\StylizedFurnitureSet_armchair_DiffuseOpacity.tga
+
+newmtl armchair.004
+Ns 250.000000
+Ka 0.434483 0.434483 0.434483
+Kd 0.000771 0.146684 0.122702
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Kd C:\Dev\POGL\assets\textures\armchair\StylizedFurnitureSet_armchair_DiffuseOpacity.tga
+map_Ks C:/Users/yanis/Downloads/textures/Packed/StylizedFurnitureSet_armchair_SpecularAO.tga
+map_Bump -bm 1.000000 C:/Users/yanis/Downloads/textures/Packed/StylizedFurnitureSet_armchair_NormalOpenGLGloss.tga
+
+newmtl christmasPresents
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.030818 0.349997 0.004586
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:\Dev\POGL\assets\textures\christmasPresents\StylizedFurnitureSet_christmasPresents_DiffuseOpacity.tga
+
+newmtl christmasPresents.004
+Ns 250.000000
+Ka 0.282759 0.282759 0.282759
+Kd 0.030818 0.349997 0.004586
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Kd C:\Dev\POGL\assets\textures\christmasPresents\StylizedFurnitureSet_christmasPresents_DiffuseOpacity.tga
+map_Ks C:/Users/yanis/Downloads/textures/Packed/StylizedFurnitureSet_christmasPresents_SpecularAO.tga
+map_Bump -bm 1.000000 C:/Users/yanis/Downloads/textures/Packed/StylizedFurnitureSet_christmasPresents_NormalOpenGLGloss.tga
+
+newmtl fireplace
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.089546 0.165873 0.235711
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:\Dev\POGL\assets\textures\fireplace\StylizedFurnitureSet_fireplace_DiffuseOpacity.tga
+
+newmtl fireplace.004
+Ns 250.000000
+Ka 0.055172 0.055172 0.055172
+Kd 0.089546 0.165873 0.235711
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Kd C:\Dev\POGL\assets\textures\fireplace\StylizedFurnitureSet_fireplace_DiffuseOpacity.tga
+map_Ks C:/Users/yanis/Downloads/textures/Packed/StylizedFurnitureSet_fireplace_SpecularAO.tga
+map_Bump -bm 1.000000 C:/Users/yanis/Downloads/textures/Packed/StylizedFurnitureSet_fireplace_NormalOpenGLGloss.tga
+
+newmtl furniture
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.110362 0.027005
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:\Dev\POGL\assets\textures\firniture\StylizedFurnitureSet_furniture_DiffuseOpacity.tga
+
+newmtl furniture.004
+Ns 250.000000
+Ka 0.200000 0.200000 0.200000
+Kd 0.800000 0.110362 0.027005
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 3
+map_Kd C:\Dev\POGL\assets\textures\firniture\StylizedFurnitureSet_furniture_DiffuseOpacity.tga
+map_Ks C:/Users/yanis/Downloads/textures/Packed/StylizedFurnitureSet_furniture_SpecularAO.tga
+map_d C:/Users/yanis/Downloads/textures/Packed/StylizedFurnitureSet_furniture_DiffuseOpacity.tga
+map_Bump -bm 1.000000 C:/Users/yanis/Downloads/textures/Packed/StylizedFurnitureSet_furniture_NormalOpenGLGloss.tga
+
+newmtl spruce
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 2
+map_Kd C:\Dev\POGL\assets\textures\spruce\spruce_DiffuseOpacity.tga
+map_Ks C:/Users/yanis/Downloads/textures - spruce/Packed/spruce_SpecularAO.tga
+map_d C:/Users/yanis/Downloads/textures - spruce/Packed/spruce_DiffuseOpacity.tga
+map_Bump -bm 1.000000 C:/Users/yanis/Downloads/textures - spruce/Packed/spruce_NormalOpenGLGloss.tga
+
+newmtl stacked_rectangular_stones
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+
+newmtl wooden_planks
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
