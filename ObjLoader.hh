@@ -228,21 +228,43 @@ public:
             glVertexAttribPointer(uv_location, 3, GL_FLOAT, GL_FALSE, 0, 0 );TEST_OPENGL_ERROR();
             glEnableVertexAttribArray(uv_location);TEST_OPENGL_ERROR();
 
-            //load textures
-            glActiveTexture(GL_TEXTURE0);TEST_OPENGL_ERROR();
-            glGenTextures(1, &texture_vbo);
-            glBindTexture(GL_TEXTURE_2D_ARRAY, texture_vbo);TEST_OPENGL_ERROR();
+            // Load textures
+            GLsizei width = 0;
+            GLsizei height = 0;
+            size_t layerCount = 10;
+
+            std::vector<std::uint8_t> texels;
+
             for (size_t i = 0; i < materials.size(); i++)
             {
+                std::cout << "loaded texture " << i << "\n";
                 Tga* tgaImage = materials[i]->kdMap;
-
                 if (tgaImage) {
-                    // Upload pixel data for the current image to the corresponding layer.
-                    glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, tgaImage->GetWidth(), tgaImage->GetHeight(), 1,
-                                    GL_BGRA, GL_UNSIGNED_BYTE, tgaImage->GetPixels().data());
+                    if (width == 0 && height == 0) {
+                        width = tgaImage->GetWidth();
+                        height = tgaImage->GetHeight();
+                    }
+                    for (size_t j = 0; j < tgaImage->GetPixels().size(); j++) {
+                        texels.push_back(tgaImage->GetPixels()[j]);
+                    }
+                    //break;
                 }
             }
-            glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+            std::cout << "textures loaded !" << "\n";
+
+            glGenTextures(1,&texture_vbo);TEST_OPENGL_ERROR();
+            glBindTexture(GL_TEXTURE_2D_ARRAY,texture_vbo);TEST_OPENGL_ERROR();
+            // Allocate the storage.
+            glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, width, height, layerCount);TEST_OPENGL_ERROR();
+            glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, width, height, layerCount, GL_BGRA, GL_UNSIGNED_BYTE, texels.data());TEST_OPENGL_ERROR();
+            // Always set reasonable texture parameters
+            glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MIN_FILTER,GL_LINEAR);TEST_OPENGL_ERROR();
+            glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MAG_FILTER,GL_LINEAR);TEST_OPENGL_ERROR();
+            glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);TEST_OPENGL_ERROR();
+            glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);TEST_OPENGL_ERROR();
+
+            //glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+
         }
         glBindVertexArray(0);TEST_OPENGL_ERROR();
     }
