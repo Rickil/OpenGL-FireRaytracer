@@ -75,9 +75,6 @@ public:
     void load(const char* path){
         //load materials
         // Generate the texture array.
-        //program->use();
-        //glBindVertexArray(vao);TEST_OPENGL_ERROR();
-        //glBindTexture(GL_TEXTURE_2D_ARRAY, texture_vbo);
         materials = Material::loadMaterials(path);
 
         //init buffers
@@ -104,18 +101,23 @@ public:
             if (res == EOF)
                 break;
             if (strcmp( lineHeader, "o" ) == 0){
+                /*char objectName[128];
+                fscanf(file, "%s", objectName);
+                if ( strcmp( objectName, "rug_low" ) == 0 ){
+                    int a = 5;
+                }*/
                 nbVertices = 0;
             }
             else if ( strcmp( lineHeader, "v" ) == 0 ){
                 Vector3 vertex;
                 fscanf(file, " %f %f %f\n", &vertex.x, &vertex.y, &vertex.z );
                 temp_vertex_buffer.push_back(vertex);
-                nbVertices++;
             }
             else if ( strcmp( lineHeader, "vt" ) == 0 ) {
                 Vector3 uv;
                 fscanf(file, "%f %f\n", &uv.x, &uv.y);
                 temp_uv_buffer.push_back(uv);
+                nbVertices++;
             }else if ( strcmp( lineHeader, "vn" ) == 0 ) {
                 Vector3 normal;
                 fscanf(file, "%f %f %f\n", &normal.x, &normal.y, &normal.z);
@@ -200,7 +202,7 @@ public:
             glEnableVertexAttribArray(vertex_location);TEST_OPENGL_ERROR();
 
             //init smart vertex buffer
-            KDTree kdTree = KDTree(1000, vertex_buffer);
+            KDTree kdTree = KDTree(1000, vertex_buffer, uv_buffer);
             kdTree.fillSmart(smart_vertex_buffer);
 
             //init and enable vertex ssbo
@@ -228,42 +230,51 @@ public:
             glVertexAttribPointer(uv_location, 3, GL_FLOAT, GL_FALSE, 0, 0 );TEST_OPENGL_ERROR();
             glEnableVertexAttribArray(uv_location);TEST_OPENGL_ERROR();
 
-            // Load textures
+            // Load and store textures
             GLsizei width = 0;
             GLsizei height = 0;
             size_t layerCount = 10;
 
             std::vector<std::uint8_t> texels;
 
-            for (size_t i = 0; i < materials.size(); i++)
+            for (size_t i = 0; i<materials.size(); i++)
             {
                 std::cout << "loaded texture " << i << "\n";
                 Tga* tgaImage = materials[i]->kdMap;
-                if (tgaImage) {
-                    if (width == 0 && height == 0) {
+                if (tgaImage)
+                {
+                    const std::vector<std::uint8_t>& pixels = tgaImage->GetRGBA();
+
+                    if (width == 0 && height == 0)
+                    {
                         width = tgaImage->GetWidth();
                         height = tgaImage->GetHeight();
+                        texels.reserve(pixels.size() * layerCount);
                     }
-                    for (size_t j = 0; j < tgaImage->GetPixels().size(); j++) {
-                        texels.push_back(tgaImage->GetPixels()[j]);
-                    }
-                    //break;
+
+                    texels.insert(texels.end(),pixels.begin(), pixels.end());
                 }
             }
-            std::cout << "textures loaded !" << "\n";
 
+            std::cout << "textures loaded!\n";
+
+            GLint textureArrayLoc = glGetUniformLocation(program->program_id, "textureArray");
+            glUniform1i(textureArrayLoc, 0); // 0 refers to texture unit 0
+            glActiveTexture(GL_TEXTURE0);TEST_OPENGL_ERROR();
             glGenTextures(1,&texture_vbo);TEST_OPENGL_ERROR();
             glBindTexture(GL_TEXTURE_2D_ARRAY,texture_vbo);TEST_OPENGL_ERROR();
+
             // Allocate the storage.
             glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, width, height, layerCount);TEST_OPENGL_ERROR();
-            glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, width, height, layerCount, GL_BGRA, GL_UNSIGNED_BYTE, texels.data());TEST_OPENGL_ERROR();
+            glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, width, height, layerCount, GL_RGBA, GL_UNSIGNED_BYTE, texels.data());TEST_OPENGL_ERROR();
             // Always set reasonable texture parameters
             glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MIN_FILTER,GL_LINEAR);TEST_OPENGL_ERROR();
             glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MAG_FILTER,GL_LINEAR);TEST_OPENGL_ERROR();
             glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);TEST_OPENGL_ERROR();
             glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);TEST_OPENGL_ERROR();
+            glGenerateMipmap(GL_TEXTURE_2D_ARRAY);TEST_OPENGL_ERROR();
 
-            //glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+            glBindTexture(GL_TEXTURE_2D_ARRAY, 0);TEST_OPENGL_ERROR();
 
         }
         glBindVertexArray(0);TEST_OPENGL_ERROR();
@@ -286,6 +297,7 @@ public:
             glDrawArrays(GL_TRIANGLES, 0, vertex_buffer.size());TEST_OPENGL_ERROR();
             //unbind appropriate data
             glDisableVertexAttribArray(0);TEST_OPENGL_ERROR();
+            glBindTexture(GL_TEXTURE_2D_ARRAY, 0);TEST_OPENGL_ERROR();
             glBindVertexArray(0);TEST_OPENGL_ERROR();
         }
     }

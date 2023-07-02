@@ -56,7 +56,7 @@ public:
         glGenTextures(1, &texture_id);TEST_OPENGL_ERROR();
         glBindTexture(GL_TEXTURE_2D,texture_id);TEST_OPENGL_ERROR();
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA, texture.GetWidth(), texture.GetHeight(), 0, GL_BGRA, GL_UNSIGNED_BYTE, texture.GetPixels().data());TEST_OPENGL_ERROR();
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.GetWidth(), texture.GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.GetRGBA().data());TEST_OPENGL_ERROR();
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);TEST_OPENGL_ERROR();
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);TEST_OPENGL_ERROR();

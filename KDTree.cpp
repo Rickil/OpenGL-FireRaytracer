@@ -1,28 +1,30 @@
 #include "KDTree.hh"
 #include <algorithm>
 
-KDTree::KDTree(int maxVerticesPerSphere, const std::vector<float> vertices) : root(nullptr)
+KDTree::KDTree(int maxVerticesPerSphere, const std::vector<float> vertices, const std::vector<float> uv) : root(nullptr)
 {
     //build vec3 vector from float array
-    std::vector<Vector3> array;
+    std::vector<VertexData> data;
     for (unsigned int i=0; i<vertices.size(); i+=3){
-        array.emplace_back(vertices[i],vertices[i+1],vertices[i+2]);
+        Vector3 vertex = {vertices[i],vertices[i+1],vertices[i+2]};
+        Vector3 uvCoord = {uv[i],uv[i+1],uv[i+2]};
+        data.push_back({vertex, uvCoord});
     }
 
     // Build the KDTree
-    root = BuildTree(array, maxVerticesPerSphere, depth+1);
+    root = BuildTree(data, maxVerticesPerSphere, depth+1);
 }
 
-Node* KDTree::BuildTree(std::vector<Vector3>& vertices, int maxVerticesPerSphere, int depth)
+Node* KDTree::BuildTree(std::vector<VertexData> data, int maxVerticesPerSphere, int depth)
 {
     Node* node = nullptr;
-    if (vertices.empty()) {
+    if (data.empty()) {
         return nullptr;
     }
 
-    if (vertices.size() <= maxVerticesPerSphere) {
+    if (data.size() <= maxVerticesPerSphere) {
         // Create a leaf node
-        node = CreateLeafNode(vertices);
+        node = CreateLeafNode(data);
         return node;
     }
 
@@ -30,33 +32,34 @@ Node* KDTree::BuildTree(std::vector<Vector3>& vertices, int maxVerticesPerSphere
     int axis = depth%3;
 
     // Sort the vertices based on the selected axis
-    std::sort(vertices.begin(), vertices.end(), [axis](Vector3 a, Vector3 b) {
-        return a.toFloatArray()[axis] < b.toFloatArray()[axis];
+    std::sort(data.begin(), data.end(), [axis](VertexData a, VertexData b) {
+        return a.vertex.toFloatArray()[axis] < b.vertex.toFloatArray()[axis];
     });
+    //need to sort the uv buffer also
 
     // Create an internal node
-    node = CreateInternalNode(vertices, axis);
+    node = CreateInternalNode(data, axis);
 
     // Split the vertices into left and right subsets
-    std::vector<Vector3> leftSubSet(vertices.begin(), vertices.begin() + vertices.size() / 2);
-    std::vector<Vector3> rightSubSet(vertices.begin() + vertices.size() / 2, vertices.end());
+    std::vector<VertexData> leftSubSet(data.begin(), data.begin() + data.size() / 2);
+    std::vector<VertexData> rightSubSet(data.begin() + data.size() / 2, data.end());
 
     // Recursively build the left and right child nodes
-    node->left = BuildTree(leftSubSet, maxVerticesPerSphere, depth+1);
-    node->right = BuildTree(rightSubSet, maxVerticesPerSphere, depth+1);
+    node->left = BuildTree(leftSubSet,  maxVerticesPerSphere, depth+1);
+    node->right = BuildTree(rightSubSet,  maxVerticesPerSphere, depth+1);
 
     return node;
 }
 
-void KDTree::CalculateBoundingSphere(Node* node, std::vector<Vector3>& vertices)
+void KDTree::CalculateBoundingSphere(Node* node, std::vector<VertexData> data)
 {
-    Vector3 minPoint = vertices[0];
-    Vector3 maxPoint = vertices[0];
+    Vector3 minPoint = data[0].vertex;
+    Vector3 maxPoint = data[0].vertex;
 
     // Find the minimum and maximum points in the vertices
-    for (auto& vertex : vertices) {
-        minPoint = Vector3::Min(minPoint, vertex);
-        maxPoint = Vector3::Max(maxPoint, vertex);
+    for (auto& vertex_data : data) {
+        minPoint = Vector3::Min(minPoint, vertex_data.vertex);
+        maxPoint = Vector3::Max(maxPoint, vertex_data.vertex);
     }
 
     // Calculate the center and radius of the bounding sphere
@@ -64,19 +67,19 @@ void KDTree::CalculateBoundingSphere(Node* node, std::vector<Vector3>& vertices)
     node->radius = Vector3::Magnitude(maxPoint - node->center);
 }
 
-Node* KDTree::CreateLeafNode(std::vector<Vector3>& vertices)
+Node* KDTree::CreateLeafNode(std::vector<VertexData> data)
 {
     Node* leafNode = new Node();
-    CalculateBoundingSphere(leafNode, vertices);
-    leafNode->vertices = vertices;
+    CalculateBoundingSphere(leafNode, data);
+    leafNode->data = data;
     return leafNode;
 }
 
-Node* KDTree::CreateInternalNode(std::vector<Vector3>& vertices, int axis)
+Node* KDTree::CreateInternalNode(std::vector<VertexData> data, int axis)
 {
     Node* internalNode = new Node();
-    CalculateBoundingSphere(internalNode, vertices);
-    internalNode->vertices = vertices;
+    CalculateBoundingSphere(internalNode, data);
+    internalNode->data = data;
     return internalNode;
 }
 
@@ -109,12 +112,15 @@ void KDTree::fillSmart(std::vector<float>& smart_vertex_buffer)
                 smart_vertex_buffer.push_back(node->center.y);
                 smart_vertex_buffer.push_back(node->center.z);
                 smart_vertex_buffer.push_back(node->radius);
-                smart_vertex_buffer.push_back(static_cast<float>(node->vertices.size()*3));
+                smart_vertex_buffer.push_back(static_cast<float>(node->data.size()*6));
 
-                for (const auto& vertex : node->vertices) {
-                    smart_vertex_buffer.push_back(vertex.x);
-                    smart_vertex_buffer.push_back(vertex.y);
-                    smart_vertex_buffer.push_back(vertex.z);
+                for (const auto& vertex_data : node->data) {
+                    smart_vertex_buffer.push_back(vertex_data.vertex.x);
+                    smart_vertex_buffer.push_back(vertex_data.vertex.y);
+                    smart_vertex_buffer.push_back(vertex_data.vertex.z);
+                    smart_vertex_buffer.push_back(vertex_data.uv.x);
+                    smart_vertex_buffer.push_back(vertex_data.uv.y);
+                    smart_vertex_buffer.push_back(vertex_data.uv.z);
                 }
             } else {
                 // Internal node, push its children to the stack

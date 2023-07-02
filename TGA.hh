@@ -20,11 +20,13 @@ class Tga
 {
 private:
     std::vector<std::uint8_t> Pixels;
+    std::vector<std::uint8_t> PixelsRGBA;
     bool ImageCompressed;
     std::uint32_t width, height, size, BitsPerPixel;
 
 public:
     Tga(const char* FilePath);
+    std::vector<std::uint8_t> GetRGBA() {return this->PixelsRGBA;}
     std::vector<std::uint8_t> GetPixels() {return this->Pixels;}
     std::uint32_t GetWidth() const {return this->width;}
     std::uint32_t GetHeight() const {return this->height;}
@@ -121,6 +123,31 @@ Tga::Tga(const char* FilePath)
 
     hFile.close();
     this->Pixels = ImageData;
+
+    this->PixelsRGBA.resize(this->Pixels.size());
+
+    for (std::size_t i = 0; i < width * height; ++i)
+    {
+        if (BitsPerPixel == 32) {
+            std::size_t bgraIndex = i * 4;
+            std::size_t rgbaIndex = i * 4;
+
+            this->PixelsRGBA[rgbaIndex + 0] = this->Pixels[bgraIndex + 2];  // R
+            this->PixelsRGBA[rgbaIndex + 1] = this->Pixels[bgraIndex + 1];  // G
+            this->PixelsRGBA[rgbaIndex + 2] = this->Pixels[bgraIndex + 0];  // B
+            this->PixelsRGBA[rgbaIndex + 3] = this->Pixels[bgraIndex + 3];  // A
+        } else {
+            std::size_t bgraIndex = i * 3;
+            std::size_t rgbaIndex = i * 3;
+
+            this->PixelsRGBA[rgbaIndex + 0] = this->Pixels[bgraIndex + 2];  // R
+            this->PixelsRGBA[rgbaIndex + 1] = this->Pixels[bgraIndex + 1];  // G
+            this->PixelsRGBA[rgbaIndex + 2] = this->Pixels[bgraIndex + 0];  // B
+        }
+    }
+
+
+    int a = 2;
 }
 
 

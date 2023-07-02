@@ -29,6 +29,11 @@ layout(std430, binding = 0) buffer MyBuffer {
     float data[];
 };
 
+struct CollisionData {
+    vec3 vertex;
+    vec3 color;
+};
+
 vec3 checkCollisionTriangle(vec3 v1, vec3 v2, vec3 v3, vec3 ray) {
     const float EPSILON = 0.0001;
 
@@ -183,7 +188,7 @@ bool checkIsShadow(vec3 ray, vec3 vertex){
     return false;
 }
 
-vec3 checkCollision(vec3 vertex, vec3 normal) {
+CollisionData checkCollision(vec3 vertex, vec3 normal) {
     vec3 cameraToVertex = vertex - camera;
     vec3 reflectedDirection = normalize(cameraToVertex - normal * 2.0 * dot(cameraToVertex, normal));
     vec3 reflected_position = vec3(0.0);
@@ -211,6 +216,7 @@ vec3 checkCollision(vec3 vertex, vec3 normal) {
         i += 5 + uint(data[i+4]);
     }
 
+    CollisionData collision;
     //now we find the collision between the reflected ray nd triangles
     //in one of the sphere we sorted precedently
     for (i=0; i < MAX_COLLISIONS; i++){
@@ -218,24 +224,34 @@ vec3 checkCollision(vec3 vertex, vec3 normal) {
         //and how much of them we have
         float nbVertices = data[collisions[i]];
         bool foundIntersection = false;
-        for (uint j = 0; j < nbVertices; j+=9){
+        for (uint j = 0; j < nbVertices; j+=18){
             uint index = collisions[i]+1+j;
             vec3 v1 = vec3(data[index], data[index + 1], data[index + 2]);
-            vec3 v2 = vec3(data[index + 3], data[index + 4], data[index + 5]);
-            vec3 v3 = vec3(data[index + 6], data[index + 7], data[index + 8]);
+            vec3 uv1 = vec3(data[index + 3], data[index + 4], data[index + 5]);
+            vec3 v2 = vec3(data[index + 6], data[index + 7], data[index + 8]);
+            vec3 uv2 = vec3(data[index + 9], data[index + 10], data[index + 11]);
+            vec3 v3 = vec3(data[index + 12], data[index + 13], data[index + 14]);
+            vec3 uv3 = vec3(data[index + 15], data[index + 16], data[index + 17]);
 
             vec3 collisionPoint = checkCollisionTriangle(v1, v2, v3, reflectedDirection);
 
             if (length(collisionPoint) > 0.0 && (length(reflected_position) == 0.0 || length(collisionPoint - vertex) < length(reflected_position - vertex))) {
                 reflected_position = collisionPoint;
                 foundIntersection = true;
+
+                //we take the average color of the triangle
+                vec3 c1 = texture(textureArray, uv1).xyz;
+                vec3 c2 = texture(textureArray, uv2).xyz;
+                vec3 c3 = texture(textureArray, uv3).xyz;
+                collision.color = (c1+c2+c3)/3;
+                collision.vertex = reflected_position;
             }
         }
         if (foundIntersection)
         break;
     }
 
-    return reflected_position;
+    return collision;
 }
 
 vec3 applyDiffusionAndSpecular(vec3 position){
@@ -268,10 +284,10 @@ vec3 applyDiffusionAndSpecular(vec3 position){
 
 vec3 applyReflection(vec3 uvColor){
     vec3 res = applyDiffusionAndSpecular(vPosition)*uvColor;
-    /*vec3 reflection = checkCollision(vPosition, vNormal);
-    if (any(notEqual(reflection, vec3(0.0)))){
-        res += applyDiffusionAndSpecular(reflection)*vColor;
-    }*/
+    CollisionData reflection = checkCollision(vPosition, vNormal);
+    if (any(notEqual(reflection.vertex, vec3(0.0)))){
+        res += applyDiffusionAndSpecular(reflection.vertex)*reflection.color;
+    }
     return res;
 }
 
@@ -283,5 +299,6 @@ void main() {
         uvColor = vec4(1.0,1.0,0.0,1.0);
     }
     color = applyReflection(uvColor.xyz);
+    //color = uvColor.xyz;
     gl_Position = worldToProj_matrix * vec4(vPosition, 1.0);
 }
