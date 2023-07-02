@@ -33,15 +33,27 @@ public:
     float radius;
 };*/
 
-class VertexData
+class TriangleData
 {
 public:
-    Vector3 vertex;
-    Vector3 uv;
+    Vector3 vertex1;
+    Vector3 uv1;
+    Vector3 vertex2;
+    Vector3 uv2;
+    Vector3 vertex3;
+    Vector3 uv3;
 
-    VertexData(Vector3 vertex, Vector3 uv){
-        this->vertex = vertex;
-        this->uv = uv;
+    TriangleData(Vector3 vertex1, Vector3 uv1, Vector3 vertex2, Vector3 uv2, Vector3 vertex3, Vector3 uv3){
+        this->vertex1 = vertex1;
+        this->uv1 = uv1;
+        this->vertex2 = vertex2;
+        this->uv2 = uv2;
+        this->vertex3 = vertex3;
+        this->uv3 = uv3;
+    }
+
+    Vector3 getCentroid(){
+        return (vertex1+vertex2+vertex3)/3.0;
     }
 };
 
@@ -49,10 +61,9 @@ class Node {
 public:
     Vector3 center;
     float radius;
-    int depth;
     Node* left = nullptr;
     Node* right = nullptr;
-    std::vector<VertexData> data;
+    std::vector<TriangleData> data;
 };
 
 class KDTree {
@@ -68,10 +79,10 @@ public:
     void DestroyTree();
     void getNeighboursParticles(float range, Vector3 position, std::vector<Particle*> &neighbours, float* largestDistanceInRange);
 
-    Node* BuildTree(std::vector<VertexData> data, int maxVerticesPerSphere, int depth);
-    void CalculateBoundingSphere(Node* node, std::vector<VertexData> data);
-    Node* CreateLeafNode(std::vector<VertexData> data);
-    Node* CreateInternalNode(std::vector<VertexData> data, int axis);
+    Node* BuildTree(std::vector<TriangleData> data, int maxTrianglesPerSphere, int depth);
+    void CalculateBoundingSphere(Node* node, std::vector<TriangleData> data);
+    Node* CreateLeafNode(std::vector<TriangleData> data);
+    Node* CreateInternalNode(std::vector<TriangleData> data);
     void DestroyTree(Node* node);
     void fillSmart(Node* node, std::vector<float>& smart_vertex_buffer);
 };

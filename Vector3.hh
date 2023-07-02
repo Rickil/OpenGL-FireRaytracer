@@ -83,6 +83,10 @@ public:
         z-=v.z;
     }
 
+    Vector3 operator/(float v){
+        return {x/v, y/v, z/v};
+    }
+
     void operator/=(float v){
         x/=v;
         y/=v;

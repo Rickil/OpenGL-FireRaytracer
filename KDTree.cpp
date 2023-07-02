@@ -4,25 +4,29 @@
 KDTree::KDTree(int maxVerticesPerSphere, const std::vector<float> vertices, const std::vector<float> uv) : root(nullptr)
 {
     //build vec3 vector from float array
-    std::vector<VertexData> data;
-    for (unsigned int i=0; i<vertices.size(); i+=3){
-        Vector3 vertex = {vertices[i],vertices[i+1],vertices[i+2]};
-        Vector3 uvCoord = {uv[i],uv[i+1],uv[i+2]};
-        data.push_back({vertex, uvCoord});
+    std::vector<TriangleData> data;
+    for (unsigned int i=0; i<vertices.size(); i+=9){
+        Vector3 vertex1 = {vertices[i],vertices[i+1],vertices[i+2]};
+        Vector3 uv1 = {uv[i],uv[i+1],uv[i+2]};
+        Vector3 vertex2 = {vertices[i+3],vertices[i+4],vertices[i+5]};
+        Vector3 uv2 = {uv[i+3],uv[i+4],uv[i+5]};
+        Vector3 vertex3 = {vertices[i+6],vertices[i+7],vertices[i+8]};
+        Vector3 uv3 = {uv[i+6],uv[i+7],uv[i+8]};
+        data.push_back({vertex1, uv1,vertex2, uv2,vertex3, uv3});
     }
 
     // Build the KDTree
     root = BuildTree(data, maxVerticesPerSphere, depth+1);
 }
 
-Node* KDTree::BuildTree(std::vector<VertexData> data, int maxVerticesPerSphere, int depth)
+Node* KDTree::BuildTree(std::vector<TriangleData> data, int maxTrianglesPerSphere, int depth)
 {
     Node* node = nullptr;
     if (data.empty()) {
         return nullptr;
     }
 
-    if (data.size() <= maxVerticesPerSphere) {
+    if (data.size() <= maxTrianglesPerSphere) {
         // Create a leaf node
         node = CreateLeafNode(data);
         return node;
@@ -32,34 +36,36 @@ Node* KDTree::BuildTree(std::vector<VertexData> data, int maxVerticesPerSphere, 
     int axis = depth%3;
 
     // Sort the vertices based on the selected axis
-    std::sort(data.begin(), data.end(), [axis](VertexData a, VertexData b) {
-        return a.vertex.toFloatArray()[axis] < b.vertex.toFloatArray()[axis];
+    std::sort(data.begin(), data.end(), [axis](TriangleData a, TriangleData b) {
+        float centroidA = a.getCentroid().toFloatArray()[axis];
+        float centroidB = b.getCentroid().toFloatArray()[axis];
+        return centroidA < centroidB;
     });
     //need to sort the uv buffer also
 
     // Create an internal node
-    node = CreateInternalNode(data, axis);
+    node = CreateInternalNode(data);
 
     // Split the vertices into left and right subsets
-    std::vector<VertexData> leftSubSet(data.begin(), data.begin() + data.size() / 2);
-    std::vector<VertexData> rightSubSet(data.begin() + data.size() / 2, data.end());
+    std::vector<TriangleData> leftSubSet(data.begin(), data.begin() + data.size() / 2);
+    std::vector<TriangleData> rightSubSet(data.begin() + data.size() / 2, data.end());
 
     // Recursively build the left and right child nodes
-    node->left = BuildTree(leftSubSet,  maxVerticesPerSphere, depth+1);
-    node->right = BuildTree(rightSubSet,  maxVerticesPerSphere, depth+1);
+    node->left = BuildTree(leftSubSet,  maxTrianglesPerSphere, depth+1);
+    node->right = BuildTree(rightSubSet,  maxTrianglesPerSphere, depth+1);
 
     return node;
 }
 
-void KDTree::CalculateBoundingSphere(Node* node, std::vector<VertexData> data)
+void KDTree::CalculateBoundingSphere(Node* node, std::vector<TriangleData> data)
 {
-    Vector3 minPoint = data[0].vertex;
-    Vector3 maxPoint = data[0].vertex;
+    Vector3 minPoint = data[0].getCentroid();
+    Vector3 maxPoint = data[0].getCentroid();
 
     // Find the minimum and maximum points in the vertices
     for (auto& vertex_data : data) {
-        minPoint = Vector3::Min(minPoint, vertex_data.vertex);
-        maxPoint = Vector3::Max(maxPoint, vertex_data.vertex);
+        minPoint = Vector3::Min(minPoint, vertex_data.getCentroid());
+        maxPoint = Vector3::Max(maxPoint, vertex_data.getCentroid());
     }
 
     // Calculate the center and radius of the bounding sphere
@@ -67,7 +73,7 @@ void KDTree::CalculateBoundingSphere(Node* node, std::vector<VertexData> data)
     node->radius = Vector3::Magnitude(maxPoint - node->center);
 }
 
-Node* KDTree::CreateLeafNode(std::vector<VertexData> data)
+Node* KDTree::CreateLeafNode(std::vector<TriangleData> data)
 {
     Node* leafNode = new Node();
     CalculateBoundingSphere(leafNode, data);
@@ -75,7 +81,7 @@ Node* KDTree::CreateLeafNode(std::vector<VertexData> data)
     return leafNode;
 }
 
-Node* KDTree::CreateInternalNode(std::vector<VertexData> data, int axis)
+Node* KDTree::CreateInternalNode(std::vector<TriangleData> data)
 {
     Node* internalNode = new Node();
     CalculateBoundingSphere(internalNode, data);
@@ -101,15 +107,33 @@ void KDTree::fillSmart(Node* node, std::vector<float>& smart_vertex_buffer)
         smart_vertex_buffer.push_back(node->center.y);
         smart_vertex_buffer.push_back(node->center.z);
         smart_vertex_buffer.push_back(node->radius);
-        smart_vertex_buffer.push_back(static_cast<float>(node->data.size()*6));
+        smart_vertex_buffer.push_back(static_cast<float>(node->data.size()*18));
 
         for (const auto& vertex_data : node->data) {
-            smart_vertex_buffer.push_back(vertex_data.vertex.x);
-            smart_vertex_buffer.push_back(vertex_data.vertex.y);
-            smart_vertex_buffer.push_back(vertex_data.vertex.z);
-            smart_vertex_buffer.push_back(vertex_data.uv.x);
-            smart_vertex_buffer.push_back(vertex_data.uv.y);
-            smart_vertex_buffer.push_back(vertex_data.uv.z);
+            //first vertex
+            smart_vertex_buffer.push_back(vertex_data.vertex1.x);
+            smart_vertex_buffer.push_back(vertex_data.vertex1.y);
+            smart_vertex_buffer.push_back(vertex_data.vertex1.z);
+            smart_vertex_buffer.push_back(vertex_data.uv1.x);
+            smart_vertex_buffer.push_back(vertex_data.uv1.y);
+            smart_vertex_buffer.push_back(vertex_data.uv1.z);
+
+            //second vertex
+            smart_vertex_buffer.push_back(vertex_data.vertex2.x);
+            smart_vertex_buffer.push_back(vertex_data.vertex2.y);
+            smart_vertex_buffer.push_back(vertex_data.vertex2.z);
+            smart_vertex_buffer.push_back(vertex_data.uv2.x);
+            smart_vertex_buffer.push_back(vertex_data.uv2.y);
+            smart_vertex_buffer.push_back(vertex_data.uv2.z);
+
+            //third vertex
+            smart_vertex_buffer.push_back(vertex_data.vertex3.x);
+            smart_vertex_buffer.push_back(vertex_data.vertex3.y);
+            smart_vertex_buffer.push_back(vertex_data.vertex3.z);
+            smart_vertex_buffer.push_back(vertex_data.uv3.x);
+            smart_vertex_buffer.push_back(vertex_data.uv3.y);
+            smart_vertex_buffer.push_back(vertex_data.uv3.z);
+
         }
     }else{
         if (node->left){
