@@ -72,7 +72,7 @@ public:
 
         glUniform3f(color_location, 1.0,1.0,0.0);
         glUniform3f(lightColor_location, 1.0,0.63,0.0);
-        glUniform1f(lightIntensity_location, 0.001);
+        glUniform1f(lightIntensity_location, 0.005);
 
         updateLightUniform();
     }
