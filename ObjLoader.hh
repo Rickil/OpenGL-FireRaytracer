@@ -24,6 +24,7 @@ public:
     GLuint normal_vbo;
     GLuint uv_vbo;
     GLuint texture_vbo;
+    GLuint light_ssbo_vbo;
 
     program* program;
     Camera* camera;
@@ -32,9 +33,10 @@ public:
     std::vector<Material*> materials;
 
     void updateLightUniform(){
-        GLuint lightPositions_location = glGetUniformLocation(program->program_id, "lightPositions");TEST_OPENGL_ERROR();
         GLuint numLights_location = glGetUniformLocation(program->program_id, "numLights");TEST_OPENGL_ERROR();
+        glUniform1i(numLights_location, fire->particles.size());
 
+        //fill lights ssbo
         std::vector<float> lightPositions;
         for (auto particle : fire->particles){
             lightPositions.push_back(particle->position.x);
@@ -42,8 +44,10 @@ public:
             lightPositions.push_back(particle->position.z);
         }
 
-        glUniform1i(numLights_location, fire->particles.size());
-        glUniform3fv(lightPositions_location, fire->particles.size(), lightPositions.data());
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, light_ssbo_vbo);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, lightPositions.size() * sizeof(float), lightPositions.data(), GL_DYNAMIC_DRAW);
+        GLuint bindingPoint = 1;  // Choose a binding point (0 or higher)
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, bindingPoint, light_ssbo_vbo);
     }
 
     ObjLoader(class program* program, Camera* camera, Fire* fire){
@@ -59,6 +63,7 @@ public:
         glGenBuffers(1, &normal_vbo);TEST_OPENGL_ERROR();
         glGenBuffers(1, &uv_vbo);TEST_OPENGL_ERROR();
         glGenBuffers(1, &vertex_ssbo_vbo);TEST_OPENGL_ERROR();
+        glGenBuffers(1, &light_ssbo_vbo);TEST_OPENGL_ERROR();
 
         //init uniforms
         GLuint color_location = glGetUniformLocation(program->program_id, "vColor");TEST_OPENGL_ERROR();

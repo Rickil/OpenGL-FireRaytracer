@@ -11,7 +11,6 @@ uniform mat4 worldToProj_matrix;
 uniform vec3 camera;
 uniform uint dataSize;
 
-uniform vec3 lightPositions[1500];  // Assuming a maximum number of lights
 uniform vec3 lightColor;
 uniform float lightIntensity;
 uniform int numLights;  // Number of active lights
@@ -26,9 +25,14 @@ const int MAX_COLLISIONS = 5;
 uint[MAX_COLLISIONS] collisions;
 float[MAX_COLLISIONS] distances;
 
-layout(std430, binding = 0) buffer MyBuffer {
+layout(std430, binding = 0) buffer dataBuffer {
     float data[];
 };
+
+layout(std430, binding = 1) buffer lightBuffer {
+    float lightPositions[];
+};
+
 
 struct CollisionData {
     vec3 vertex;
