@@ -14,6 +14,7 @@ class ObjLoader {
 public:
     std::vector<float> vertex_buffer;
     std::vector<float> smart_vertex_buffer;
+    std::vector<float> surfaceInfo;
     std::vector<float> normal_buffer;
     std::vector<float> uv_buffer;
 
@@ -66,7 +67,7 @@ public:
 
         glUniform3f(color_location, 1.0,1.0,0.0);
         glUniform3f(lightColor_location, 1.0,0.63,0.0);
-        glUniform1f(lightIntensity_location, 0.0005);
+        glUniform1f(lightIntensity_location, 0.001);
 
         updateLightUniform();
     }
@@ -76,6 +77,7 @@ public:
         //load materials
         // Generate the texture array.
         materials = Material::loadMaterials(path);
+        Material* currentMaterial;
 
         //init buffers
         std::vector<unsigned int> vertexIndices;
@@ -130,6 +132,7 @@ public:
                 // Find the corresponding Material in the vector
                 for (int i = 0; i < materials.size(); i++) {
                     if (materials[i]->name.compare(materialName) == 0) {
+                        currentMaterial = materials[i];
                         for (int j = temp_uv_buffer.size()-nbVertices; j < temp_uv_buffer.size(); j++){
                             if (materials[i]->kdMap)
                                 temp_uv_buffer[j].z = i;
@@ -159,6 +162,9 @@ public:
                 normalIndices.push_back(normalIndex[0]);
                 normalIndices.push_back(normalIndex[1]);
                 normalIndices.push_back(normalIndex[2]);
+                /*surfaceInfo.push_back(currentMaterial->kd);
+                surfaceInfo.push_back(currentMaterial->ks);
+                surfaceInfo.push_back(currentMaterial->Ns);*/
             }
         }
 
@@ -202,8 +208,9 @@ public:
             glEnableVertexAttribArray(vertex_location);TEST_OPENGL_ERROR();
 
             //init smart vertex buffer
+            smart_vertex_buffer.reserve(vertex_buffer.size()*2.5);
             KDTree kdTree = KDTree(1000, vertex_buffer, uv_buffer);
-            kdTree.fillSmart(smart_vertex_buffer);
+            kdTree.fillSmart(kdTree.root, smart_vertex_buffer);
 
             //init and enable vertex ssbo
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, vertex_ssbo_vbo);
@@ -235,11 +242,20 @@ public:
             GLsizei height = 0;
             size_t layerCount = 10;
 
-            std::vector<std::uint8_t> texels;
+            GLint textureArrayLoc = glGetUniformLocation(program->program_id, "textureArray");
+            glUniform1i(textureArrayLoc, 0); // 0 refers to texture unit 0
+            //glActiveTexture(GL_TEXTURE0);TEST_OPENGL_ERROR();
+            glGenTextures(1,&texture_vbo);TEST_OPENGL_ERROR();
+            glBindTexture(GL_TEXTURE_2D_ARRAY,texture_vbo);TEST_OPENGL_ERROR();
+
+            // Always set reasonable texture parameters
+            glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MIN_FILTER,GL_LINEAR);TEST_OPENGL_ERROR();
+            glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MAG_FILTER,GL_LINEAR);TEST_OPENGL_ERROR();
+            glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);TEST_OPENGL_ERROR();
+            glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);TEST_OPENGL_ERROR();
 
             for (size_t i = 0; i<materials.size(); i++)
             {
-                std::cout << "loaded texture " << i << "\n";
                 Tga* tgaImage = materials[i]->kdMap;
                 if (tgaImage)
                 {
@@ -249,29 +265,17 @@ public:
                     {
                         width = tgaImage->GetWidth();
                         height = tgaImage->GetHeight();
-                        texels.reserve(pixels.size() * layerCount);
+                        // Allocate the storage.
+                        glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, width, height, layerCount);TEST_OPENGL_ERROR();
                     }
 
-                    texels.insert(texels.end(),pixels.begin(), pixels.end());
+                    glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, width, height, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());TEST_OPENGL_ERROR();
+                    std::cout << "loaded texture " << i << "\n";
                 }
             }
 
             std::cout << "textures loaded!\n";
 
-            GLint textureArrayLoc = glGetUniformLocation(program->program_id, "textureArray");
-            glUniform1i(textureArrayLoc, 0); // 0 refers to texture unit 0
-            glActiveTexture(GL_TEXTURE0);TEST_OPENGL_ERROR();
-            glGenTextures(1,&texture_vbo);TEST_OPENGL_ERROR();
-            glBindTexture(GL_TEXTURE_2D_ARRAY,texture_vbo);TEST_OPENGL_ERROR();
-
-            // Allocate the storage.
-            glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, width, height, layerCount);TEST_OPENGL_ERROR();
-            glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, width, height, layerCount, GL_RGBA, GL_UNSIGNED_BYTE, texels.data());TEST_OPENGL_ERROR();
-            // Always set reasonable texture parameters
-            glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MIN_FILTER,GL_LINEAR);TEST_OPENGL_ERROR();
-            glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_MAG_FILTER,GL_LINEAR);TEST_OPENGL_ERROR();
-            glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);TEST_OPENGL_ERROR();
-            glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);TEST_OPENGL_ERROR();
             glGenerateMipmap(GL_TEXTURE_2D_ARRAY);TEST_OPENGL_ERROR();
 
             glBindTexture(GL_TEXTURE_2D_ARRAY, 0);TEST_OPENGL_ERROR();

@@ -124,7 +124,7 @@ Tga::Tga(const char* FilePath)
     hFile.close();
     this->Pixels = ImageData;
 
-    this->PixelsRGBA.resize(this->Pixels.size());
+    this->PixelsRGBA.resize(width*height*4);
 
     for (std::size_t i = 0; i < width * height; ++i)
     {
@@ -138,11 +138,12 @@ Tga::Tga(const char* FilePath)
             this->PixelsRGBA[rgbaIndex + 3] = this->Pixels[bgraIndex + 3];  // A
         } else {
             std::size_t bgraIndex = i * 3;
-            std::size_t rgbaIndex = i * 3;
+            std::size_t rgbaIndex = i * 4;
 
             this->PixelsRGBA[rgbaIndex + 0] = this->Pixels[bgraIndex + 2];  // R
             this->PixelsRGBA[rgbaIndex + 1] = this->Pixels[bgraIndex + 1];  // G
             this->PixelsRGBA[rgbaIndex + 2] = this->Pixels[bgraIndex + 0];  // B
+            this->PixelsRGBA[rgbaIndex + 3] = 255;  // A
         }
     }
 

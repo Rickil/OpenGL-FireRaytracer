@@ -94,39 +94,28 @@ void KDTree::DestroyTree(Node* node)
     delete node;
 }
 
-void KDTree::fillSmart(std::vector<float>& smart_vertex_buffer)
+void KDTree::fillSmart(Node* node, std::vector<float>& smart_vertex_buffer)
 {
-    std::vector<Node*> leafNodes;
-    std::vector<Node*> stack;
-    stack.push_back(root);
+    if (node->left == nullptr && node->right == nullptr){
+        smart_vertex_buffer.push_back(node->center.x);
+        smart_vertex_buffer.push_back(node->center.y);
+        smart_vertex_buffer.push_back(node->center.z);
+        smart_vertex_buffer.push_back(node->radius);
+        smart_vertex_buffer.push_back(static_cast<float>(node->data.size()*6));
 
-    // Perform depth-first traversal to collect leaf nodes
-    while (!stack.empty()) {
-        Node* node = stack.back();
-        stack.pop_back();
-
-        if (node != nullptr) {
-            if (node->left == nullptr && node->right == nullptr) {
-                // Leaf node, add its data to the smart_vertex_buffer
-                smart_vertex_buffer.push_back(node->center.x);
-                smart_vertex_buffer.push_back(node->center.y);
-                smart_vertex_buffer.push_back(node->center.z);
-                smart_vertex_buffer.push_back(node->radius);
-                smart_vertex_buffer.push_back(static_cast<float>(node->data.size()*6));
-
-                for (const auto& vertex_data : node->data) {
-                    smart_vertex_buffer.push_back(vertex_data.vertex.x);
-                    smart_vertex_buffer.push_back(vertex_data.vertex.y);
-                    smart_vertex_buffer.push_back(vertex_data.vertex.z);
-                    smart_vertex_buffer.push_back(vertex_data.uv.x);
-                    smart_vertex_buffer.push_back(vertex_data.uv.y);
-                    smart_vertex_buffer.push_back(vertex_data.uv.z);
-                }
-            } else {
-                // Internal node, push its children to the stack
-                stack.push_back(node->right);
-                stack.push_back(node->left);
-            }
+        for (const auto& vertex_data : node->data) {
+            smart_vertex_buffer.push_back(vertex_data.vertex.x);
+            smart_vertex_buffer.push_back(vertex_data.vertex.y);
+            smart_vertex_buffer.push_back(vertex_data.vertex.z);
+            smart_vertex_buffer.push_back(vertex_data.uv.x);
+            smart_vertex_buffer.push_back(vertex_data.uv.y);
+            smart_vertex_buffer.push_back(vertex_data.uv.z);
+        }
+    }else{
+        if (node->left){
+            fillSmart(node->left, smart_vertex_buffer);
+        }if (node->right){
+            fillSmart(node->right, smart_vertex_buffer);
         }
     }
 }

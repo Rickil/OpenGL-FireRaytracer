@@ -17,6 +17,7 @@ uniform float lightIntensity;
 uniform int numLights;  // Number of active lights
 
 out vec3 color;
+out float a;
 
 const int MAX_COLLISIONS = 5;
 
@@ -268,25 +269,26 @@ vec3 applyDiffusionAndSpecular(vec3 position){
 
         float coefDiffuse = clamp(dot(normal, light_dir), 0, 1) * lightIntensity;
         float coefSpecular = clamp(dot(reflected_ray, light_dir), 0, 1) * lightIntensity;
-        float coef = coefDiffuse + pow(coefSpecular,1);
+        float coef = coefDiffuse + pow(coefSpecular,10);
 
         totalLight += coef * lightColor;
         center += lightPositions[i];
     }
     center /= float(numLights);
 
-    if(checkIsShadow(center-position, position)){
+    /*if(checkIsShadow(center-position, position)){
         return vec3(0.0,0.0,1.0);
     }else {
         return totalLight;
-    }
+    }*/
+    return totalLight;
 }
 
 vec3 applyReflection(vec3 uvColor){
     vec3 res = applyDiffusionAndSpecular(vPosition)*uvColor;
     CollisionData reflection = checkCollision(vPosition, vNormal);
-    if (any(notEqual(reflection.vertex, vec3(0.0)))){
-        res += applyDiffusionAndSpecular(reflection.vertex)*reflection.color;
+    if (vPosition.y < 0){
+        //res += applyDiffusionAndSpecular(reflection.vertex)*reflection.color;
     }
     return res;
 }
@@ -300,5 +302,6 @@ void main() {
     }
     color = applyReflection(uvColor.xyz);
     //color = uvColor.xyz;
+    a = uvColor.a;
     gl_Position = worldToProj_matrix * vec4(vPosition, 1.0);
 }

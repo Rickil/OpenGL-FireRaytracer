@@ -21,7 +21,6 @@ public:
     Tga* ksMap = nullptr;
     Vector3 kd;
     Vector3 ks;
-    float Ns;
 
     Material(){}
     ~Material(){
@@ -91,12 +90,6 @@ public:
                 float r, g, b;
                 if (iss >> r >> g >> b) {
                     currentMaterial->ks = Vector3(r,g,b);
-                }
-            }
-            else if (command == "Ns") {
-                float ns;
-                if (iss >> ns) {
-                    currentMaterial->Ns = ns;
                 }
             }
         }

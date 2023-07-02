@@ -16,7 +16,7 @@ public:
         lifetime = 200 + lifetimeOffset;
 
         //set random initial position for particle between -1 and 1
-        position = Vector3((((float) rand() / (float) RAND_MAX) - 0.5),0.5,(((float) rand() / (float) RAND_MAX) - 0.5));
+        position = Vector3((((float) rand() / (float) RAND_MAX) - 0.5)+0.5,0.5,(((float) rand() / (float) RAND_MAX) - 0.5));
     }
 
     void update(std::vector<Particle*> &particlesInRange, unsigned int deltaTime){

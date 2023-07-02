@@ -50,8 +50,8 @@ public:
     Vector3 center;
     float radius;
     int depth;
-    Node* left;
-    Node* right;
+    Node* left = nullptr;
+    Node* right = nullptr;
     std::vector<VertexData> data;
 };
 
@@ -73,7 +73,7 @@ public:
     Node* CreateLeafNode(std::vector<VertexData> data);
     Node* CreateInternalNode(std::vector<VertexData> data, int axis);
     void DestroyTree(Node* node);
-    void fillSmart(std::vector<float>& smart_vertex_buffer);
+    void fillSmart(Node* node, std::vector<float>& smart_vertex_buffer);
 };
 
 
