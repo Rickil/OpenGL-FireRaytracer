@@ -18,13 +18,14 @@ uniform int numLights;  // Number of active lights
 out vec3 color;
 out float a;
 
-const int MAX_COLLISIONS = 5;
+const int MAX_COLLISIONS_REFLECTION = 20;
+const int MAX_COLLISIONS_SHADOW = 10;
 const vec3 defaultColor = vec3(0.64313725, 0.45490196, 0.28627451);
 
 //collisions will hold the index of the nbVertices in data
 //distances will hold the distances of each sphere to help the sorting
-uint[MAX_COLLISIONS] collisions;
-float[MAX_COLLISIONS] distances;
+uint[MAX_COLLISIONS_REFLECTION] collisions;
+float[MAX_COLLISIONS_REFLECTION] distances;
 
 layout(std430, binding = 0) buffer dataBuffer {
     float data[];
@@ -297,21 +298,21 @@ bool checkIsShadow(vec3 center, vec3 vertex){
                 i += 7 + uint(data[i+6]);
                 continue;
             }
-            if (nbCollisions == MAX_COLLISIONS){
-                bubbleSort(MAX_COLLISIONS);
+            if (nbCollisions == MAX_COLLISIONS_SHADOW){
+                bubbleSort(MAX_COLLISIONS_SHADOW);
             }
-            if (nbCollisions < MAX_COLLISIONS){
+            if (nbCollisions < MAX_COLLISIONS_SHADOW){
                 collisions[nbCollisions] = i+6;
                 distances[nbCollisions] = dist;
             }else{
-                insert(dist, i+6, MAX_COLLISIONS);
+                insert(dist, i+6, MAX_COLLISIONS_SHADOW);
             }
             nbCollisions++;
         }
         i += 7 + uint(data[i+6]);
     }
 
-    for (uint i=0; i < MAX_COLLISIONS; i++){
+    for (uint i=0; i < MAX_COLLISIONS_SHADOW; i++){
         //we get the index where the vertices start in data
         //and how much of them we have
         float nbVertices = data[collisions[i]];
@@ -404,14 +405,14 @@ CollisionData checkCollision(vec3 vertex, vec3 normal) {
         vec3 nodeCenter = (nodeMin+nodeMax)/2.0;
         if (checkCubeCollisionDirection(nodeMin, nodeMax, vertex, reflectedDirection)){
             float dist = distance(vPosition, nodeCenter);
-            if (nbCollisions == MAX_COLLISIONS){
-                bubbleSort(MAX_COLLISIONS);
+            if (nbCollisions == MAX_COLLISIONS_REFLECTION){
+                bubbleSort(MAX_COLLISIONS_REFLECTION);
             }
-            if (nbCollisions < MAX_COLLISIONS){
+            if (nbCollisions < MAX_COLLISIONS_REFLECTION){
                 collisions[nbCollisions] = i+6;
                 distances[nbCollisions] = dist;
             }else{
-                insert(dist, i+6, MAX_COLLISIONS);
+                insert(dist, i+6, MAX_COLLISIONS_REFLECTION);
             }
             nbCollisions++;
         }
@@ -422,7 +423,7 @@ CollisionData checkCollision(vec3 vertex, vec3 normal) {
     collision.vertex = vec3(0.0);
     //now we find the collision between the reflected ray nd triangles
     //in one of the sphere we sorted precedently
-    for (i=0; i < MAX_COLLISIONS; i++){
+    for (i=0; i < MAX_COLLISIONS_REFLECTION; i++){
         //we get the index where the vertices start in data
         //and how much of them we have
         float nbVertices = data[collisions[i]];
@@ -485,17 +486,14 @@ vec3 applyDiffusionAndSpecular(vec3 position){
         float coefSpecular = clamp(dot(reflected_ray, light_dir), 0, 1) * lightIntensity;
         float coef = coefDiffuse + pow(coefSpecular,10);
 
-        /*if(checkIsShadow(lightPos, position) == false){
-            totalLight += coef * lightColor;
-        }*/
         totalLight += coef * lightColor;
         center += lightPos;
     }
     center /= float(numLights);
 
-    if(checkIsShadow(center, position)){
-        return vec3(0.0,0.0,0.0);
-    }else {
+    if (checkIsShadow(center, position)){
+        return vec3(0.0);
+    }else{
         return totalLight;
     }
     //return totalLight;
@@ -505,7 +503,7 @@ vec3 applyReflection(vec3 uvColor){
     vec3 res = applyDiffusionAndSpecular(vPosition)*uvColor;
     CollisionData reflection = checkCollision(vPosition, vNormal);
     if (vPosition.y < 0 && reflection.vertex != vec3(0.0)){
-        res += applyDiffusionAndSpecular(reflection.vertex)*reflection.color;
+        res = res * 0.3 + applyDiffusionAndSpecular(reflection.vertex)*reflection.color;
     }
     return res;
 }
