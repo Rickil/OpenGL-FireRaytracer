@@ -18,7 +18,7 @@ uniform int numLights;  // Number of active lights
 out vec3 color;
 out float a;
 
-const int MAX_COLLISIONS_REFLECTION = 20;
+const int MAX_COLLISIONS_REFLECTION = 15;
 const int MAX_COLLISIONS_SHADOW = 10;
 const vec3 defaultColor = vec3(0.64313725, 0.45490196, 0.28627451);
 
@@ -40,44 +40,6 @@ struct CollisionData {
     vec3 vertex;
     vec3 color;
 };
-
-/*vec3 checkCollisionTriangle(vec3 v1, vec3 v2, vec3 v3, vec3 ray) {
-    const float EPSILON = 0.0001;
-
-    //we get vector from camera center to triangle edges
-    vec3 edge1 = v2 - v1;
-    vec3 edge2 = v3 - v1;
-
-    vec3 h = cross(ray, edge2);
-    float a = dot(edge1, h);
-
-    if (abs(a) < EPSILON){
-        return vec3(0.0);
-    }
-
-    float f = 1.0 / a;
-    vec3 s = ray - v1;
-    float u = dot(s,h)*f;
-    if (u < 0.0 || u > 1.0){
-        return vec3(0.0);
-    }
-
-    vec3 q = cross(s, edge1);
-    float v = f * dot(ray, q);
-
-    // Check if the intersection point is outside the triangle
-    if (v < 0.0 || u + v > 1.0) {
-        return vec3(0.0); // Return zero vector indicating no intersection
-    }
-
-    float t = f * dot(edge2, q);
-    if (t > EPSILON){
-        vec3 intersectionPoint = v1 + u * edge1 + v * edge2;
-        return intersectionPoint;
-    }else{
-        return vec3(0.0);
-    }
-}*/
 
 bool checkCollisionTriangle(vec3 v1, vec3 v2, vec3 v3, vec3 vertex1, vec3 vertex2) {
     vec3 rayOrigin = vertex1;
@@ -115,29 +77,6 @@ bool checkCollisionTriangle(vec3 v1, vec3 v2, vec3 v3, vec3 vertex1, vec3 vertex
 
     return false; // No intersection with triangle found
 }
-
-
-/*bool checkSphereCollision(vec3 spherePosition, float radius, vec3 ray) {
-    vec3 oc = vPosition - spherePosition;
-    float a = dot(ray, ray);
-    float b = 2.0 * dot(oc, ray);
-    float c = dot(oc, oc) - radius * radius;
-    float discriminant = b * b - 4.0 * a * c;
-
-    if (discriminant < 0.0) {
-        return false;  // No collision
-    }
-
-    float sqrtDiscriminant = sqrt(discriminant);
-    float t1 = (-b - sqrtDiscriminant) / (2.0 * a);
-    float t2 = (-b + sqrtDiscriminant) / (2.0 * a);
-
-    if (t1 >= 0.0 || t2 >= 0.0) {
-        return true;  // Collision detected
-    }
-
-    return false;  // No collision
-}*/
 
 bool checkSphereCollision(vec3 center, float radius, vec3 vertex1, vec3 vertex2) {
     vec3 rayOrigin = vertex1;
@@ -312,7 +251,12 @@ bool checkIsShadow(vec3 center, vec3 vertex){
         i += 7 + uint(data[i+6]);
     }
 
-    for (uint i=0; i < MAX_COLLISIONS_SHADOW; i++){
+    //if we found less than MAX_COLLISIONS_REFLECTION
+    if (nbCollisions < MAX_COLLISIONS_SHADOW){
+        bubbleSort(nbCollisions);
+    }
+
+    for (uint i=0; i < min(nbCollisions, MAX_COLLISIONS_SHADOW); i++){
         //we get the index where the vertices start in data
         //and how much of them we have
         float nbVertices = data[collisions[i]];
@@ -419,11 +363,16 @@ CollisionData checkCollision(vec3 vertex, vec3 normal) {
         i += 7 + uint(data[i+6]);
     }
 
+    //if we found less than MAX_COLLISIONS_REFLECTION
+    if (nbCollisions < MAX_COLLISIONS_REFLECTION){
+        bubbleSort(nbCollisions);
+    }
+
     CollisionData collision;
     collision.vertex = vec3(0.0);
-    //now we find the collision between the reflected ray nd triangles
+    //now we find the collision between the reflected ray and triangles
     //in one of the sphere we sorted precedently
-    for (i=0; i < MAX_COLLISIONS_REFLECTION; i++){
+    for (i=0; i < min(nbCollisions, MAX_COLLISIONS_REFLECTION); i++){
         //we get the index where the vertices start in data
         //and how much of them we have
         float nbVertices = data[collisions[i]];
