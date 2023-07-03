@@ -404,10 +404,10 @@ CollisionData checkCollision(vec3 vertex, vec3 normal) {
         vec3 nodeCenter = (nodeMin+nodeMax)/2.0;
         if (checkCubeCollisionDirection(nodeMin, nodeMax, vertex, reflectedDirection)){
             float dist = distance(vPosition, nodeCenter);
-            if (nbCollisions == 10){
+            if (nbCollisions == MAX_COLLISIONS){
                 bubbleSort(MAX_COLLISIONS);
             }
-            if (nbCollisions < 10){
+            if (nbCollisions < MAX_COLLISIONS){
                 collisions[nbCollisions] = i+6;
                 distances[nbCollisions] = dist;
             }else{
@@ -419,6 +419,7 @@ CollisionData checkCollision(vec3 vertex, vec3 normal) {
     }
 
     CollisionData collision;
+    collision.vertex = vec3(0.0);
     //now we find the collision between the reflected ray nd triangles
     //in one of the sphere we sorted precedently
     for (i=0; i < MAX_COLLISIONS; i++){
@@ -449,18 +450,11 @@ CollisionData checkCollision(vec3 vertex, vec3 normal) {
                 vec3 c1 = texture(textureArray, uv1).xyz;
                 vec3 c2 = texture(textureArray, uv2).xyz;
                 vec3 c3 = texture(textureArray, uv3).xyz;
-                /*if (uv1.z == -1 || uv2.z == -1 || uv3.z == -1){
-
-                }*/
-                /*if (uv1.z == -1){
+                if (uv1.z == -1 || uv2.z == -1 || uv3.z == -1){
                     c1 = defaultColor;
-                }
-                if (uv2.z == -1){
                     c2 = defaultColor;
+                    c3 = defaultColor;
                 }
-                if (uv2.z == -1){
-                    c2 = defaultColor;
-                }*/
                 collision.color = (c1+c2+c3)/3;
                 collision.vertex = reflected_position;
             }
@@ -509,10 +503,10 @@ vec3 applyDiffusionAndSpecular(vec3 position){
 
 vec3 applyReflection(vec3 uvColor){
     vec3 res = applyDiffusionAndSpecular(vPosition)*uvColor;
-    /*CollisionData reflection = checkCollision(vPosition, vNormal);
+    CollisionData reflection = checkCollision(vPosition, vNormal);
     if (vPosition.y < 0 && reflection.vertex != vec3(0.0)){
         res += applyDiffusionAndSpecular(reflection.vertex)*reflection.color;
-    }*/
+    }
     return res;
 }
 
