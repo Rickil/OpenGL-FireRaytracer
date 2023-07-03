@@ -33,7 +33,7 @@ public:
     float radius;
 };*/
 
-class TriangleData
+/*class TriangleData
 {
 public:
     Vector3 vertex1;
@@ -64,13 +64,13 @@ public:
     Node* left = nullptr;
     Node* right = nullptr;
     std::vector<TriangleData> data;
-};
+};*/
 
 class KDTree {
 public:
 
     int depth = 0;
-    Node* root;
+    //Node* root;
     Particle* center;
     KDTree* left;
     KDTree* right;
@@ -79,12 +79,12 @@ public:
     void DestroyTree();
     void getNeighboursParticles(float range, Vector3 position, std::vector<Particle*> &neighbours, float* largestDistanceInRange);
 
-    Node* BuildTree(std::vector<TriangleData> data, int maxTrianglesPerSphere, int depth);
+    /*Node* BuildTree(std::vector<TriangleData> data, int maxTrianglesPerSphere, int depth);
     void CalculateBoundingSphere(Node* node, std::vector<TriangleData> data);
     Node* CreateLeafNode(std::vector<TriangleData> data);
     Node* CreateInternalNode(std::vector<TriangleData> data);
     void DestroyTree(Node* node);
-    void fillSmart(Node* node, std::vector<float>& smart_vertex_buffer);
+    void fillSmart(Node* node, std::vector<float>& smart_vertex_buffer);*/
 };
 
 

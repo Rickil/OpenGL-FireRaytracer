@@ -5,6 +5,7 @@
 #include "Vector2.hh"
 #include "Fire.hh"
 #include "Material.hh"
+#include "Octree.hh"
 #include <vector>
 #include <string>
 #include <stdexcept>
@@ -213,9 +214,12 @@ public:
             glEnableVertexAttribArray(vertex_location);TEST_OPENGL_ERROR();
 
             //init smart vertex buffer
-            smart_vertex_buffer.reserve(vertex_buffer.size()*2.5);
-            KDTree kdTree = KDTree(1000, vertex_buffer, uv_buffer);
-            kdTree.fillSmart(kdTree.root, smart_vertex_buffer);
+            smart_vertex_buffer.reserve(vertex_buffer.size()*3);
+            Octree octree = Octree(300);
+            octree.build(vertex_buffer, uv_buffer);
+            octree.fillSmart(octree.root, smart_vertex_buffer);
+            /*KDTree kdTree = KDTree(300, vertex_buffer, uv_buffer);
+            kdTree.fillSmart(kdTree.root, smart_vertex_buffer);*/
 
             //init and enable vertex ssbo
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, vertex_ssbo_vbo);
@@ -226,7 +230,8 @@ public:
             GLuint nbVertices_location = glGetUniformLocation(program->program_id, "dataSize");TEST_OPENGL_ERROR();
             glUniform1ui(nbVertices_location, smart_vertex_buffer.size());TEST_OPENGL_ERROR();
 
-            kdTree.DestroyTree(kdTree.root);
+            //octree.destroyTree(octree.root);
+            //kdTree.DestroyTree(kdTree.root);
 
         }if (!normal_buffer.empty()) {
             glBindBuffer(GL_ARRAY_BUFFER, normal_vbo);

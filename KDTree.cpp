@@ -1,7 +1,7 @@
 #include "KDTree.hh"
 #include <algorithm>
 
-KDTree::KDTree(int maxVerticesPerSphere, const std::vector<float> vertices, const std::vector<float> uv) : root(nullptr)
+/*KDTree::KDTree(int maxVerticesPerSphere, const std::vector<float> vertices, const std::vector<float> uv) : root(nullptr)
 {
     //build vec3 vector from float array
     std::vector<TriangleData> data;
@@ -142,7 +142,7 @@ void KDTree::fillSmart(Node* node, std::vector<float>& smart_vertex_buffer)
             fillSmart(node->right, smart_vertex_buffer);
         }
     }
-}
+}*/
 
 KDTree::KDTree(int depth, std::vector<Particle*> particles)
 {

@@ -13,6 +13,6 @@ link_libraries(${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${GLFW_LIBRARIES} ${GLUT_LI
 include_directories(.)
 
 add_executable(POGL
-        matrix4.hh Main.cpp Transformations.hh program.hh Camera.hh ObjLoader.hh Vector3.hh Vector2.hh Particle.hh Fire.hh TGA.hh KDTree.cpp KDTree.hh Scene.hh Object.hh Material.hh Shadows.hh)
+        matrix4.hh Main.cpp Transformations.hh program.hh Camera.hh ObjLoader.hh Vector3.hh Vector2.hh Particle.hh Fire.hh TGA.hh KDTree.cpp KDTree.hh Scene.hh Object.hh Material.hh Shadows.hh Octree.hh)
 
 target_link_libraries(POGL ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${GLUT_LIBRARY})

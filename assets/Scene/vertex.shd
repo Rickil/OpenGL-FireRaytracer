@@ -214,6 +214,72 @@ float distance(vec3 p1, vec3 p2){
     return length(diff);
 }
 
+bool checkCubeCollisionDirection(vec3 cubeMin, vec3 cubeMax, vec3 vertex, vec3 direction) {
+    float tmin = (cubeMin.x - vertex.x) / direction.x;
+    float tmax = (cubeMax.x - vertex.x) / direction.x;
+
+    if (tmin > tmax) {
+        float temp = tmin;
+        tmin = tmax;
+        tmax = temp;
+    }
+
+    float tymin = (cubeMin.y - vertex.y) / direction.y;
+    float tymax = (cubeMax.y - vertex.y) / direction.y;
+
+    if (tymin > tymax) {
+        float temp = tymin;
+        tymin = tymax;
+        tymax = temp;
+    }
+
+    if ((tmin > tymax) || (tymin > tmax)) {
+        return false;
+    }
+
+    if (tymin > tmin) {
+        tmin = tymin;
+    }
+
+    if (tymax < tmax) {
+        tmax = tymax;
+    }
+
+    float tzmin = (cubeMin.z - vertex.z) / direction.z;
+    float tzmax = (cubeMax.z - vertex.z) / direction.z;
+
+    if (tzmin > tzmax) {
+        float temp = tzmin;
+        tzmin = tzmax;
+        tzmax = temp;
+    }
+
+    if ((tmin > tzmax) || (tzmin > tmax)) {
+        return false;
+    }
+
+    return true;
+}
+
+bool checkCubeCollision(vec3 cubeMin, vec3 cubeMax, vec3 origin, vec3 destination) {
+    vec3 direction = normalize(destination - origin);
+    vec3 tmin = (cubeMin - origin) / direction;
+    vec3 tmax = (cubeMax - origin) / direction;
+
+    vec3 t1 = min(tmin, tmax);
+    vec3 t2 = max(tmin, tmax);
+
+    float tNear = max(max(t1.x, t1.y), t1.z);
+    float tFar = min(min(t2.x, t2.y), t2.z);
+
+    if (tNear > tFar || tFar < 0.0) {
+        return false;
+    }
+
+    return true;
+}
+
+
 bool checkIsShadow(vec3 center, vec3 vertex){
 
     //get all the sphere in collision with reflection
@@ -222,26 +288,27 @@ bool checkIsShadow(vec3 center, vec3 vertex){
     int nbCollisions = 0;
     float maxDist = distance(vertex, center);
     while (i < dataSize) {
-        vec3 nodeCenter = vec3(data[i],data[i+1],data[i+2]);
-        float nodeRadius = data[i+3];
-        if (checkSphereCollision(nodeCenter, nodeRadius, vertex, center)){
+        vec3 nodeMin = vec3(data[i],data[i+1],data[i+2]);
+        vec3 nodeMax = vec3(data[i+3],data[i+4],data[i+5]);
+        vec3 nodeCenter = (nodeMin+nodeMax)/2.0;
+        if (checkCubeCollision(nodeMin, nodeMax, vertex, center)){
             float dist = distance(vertex, nodeCenter);
             if (dist >= maxDist){
-                i += 5 + uint(data[i+4]);
+                i += 7 + uint(data[i+6]);
                 continue;
             }
-            if (nbCollisions == 10){
+            if (nbCollisions == MAX_COLLISIONS){
                 bubbleSort(MAX_COLLISIONS);
             }
-            if (nbCollisions < 10){
-                collisions[nbCollisions] = i+4;
+            if (nbCollisions < MAX_COLLISIONS){
+                collisions[nbCollisions] = i+6;
                 distances[nbCollisions] = dist;
             }else{
-                insert(dist, i+4, MAX_COLLISIONS);
+                insert(dist, i+6, MAX_COLLISIONS);
             }
             nbCollisions++;
         }
-        i += 5 + uint(data[i+4]);
+        i += 7 + uint(data[i+6]);
     }
 
     for (uint i=0; i < MAX_COLLISIONS; i++){
@@ -322,7 +389,6 @@ bool checkSphereCollisionDirection(vec3 center, float radius, vec3 vertex, vec3 
     return false; // No intersection with sphere found
 }
 
-
 CollisionData checkCollision(vec3 vertex, vec3 normal) {
     vec3 cameraToVertex = vertex - camera;
     vec3 reflectedDirection = normalize(cameraToVertex - normal * 2.0 * dot(cameraToVertex, normal));
@@ -333,22 +399,23 @@ CollisionData checkCollision(vec3 vertex, vec3 normal) {
     uint i = 0;
     int nbCollisions = 0;
     while (i < dataSize) {
-        vec3 nodeCenter = vec3(data[i],data[i+1],data[i+2]);
-        float nodeRadius = data[i+3];
-        if (checkSphereCollisionDirection(nodeCenter, nodeRadius, vertex, reflectedDirection)){
+        vec3 nodeMin = vec3(data[i],data[i+1],data[i+2]);
+        vec3 nodeMax = vec3(data[i+3],data[i+4],data[i+5]);
+        vec3 nodeCenter = (nodeMin+nodeMax)/2.0;
+        if (checkCubeCollisionDirection(nodeMin, nodeMax, vertex, reflectedDirection)){
             float dist = distance(vPosition, nodeCenter);
             if (nbCollisions == 10){
                 bubbleSort(MAX_COLLISIONS);
             }
             if (nbCollisions < 10){
-                collisions[nbCollisions] = i+4;
+                collisions[nbCollisions] = i+6;
                 distances[nbCollisions] = dist;
             }else{
-                insert(dist, i+4, MAX_COLLISIONS);
+                insert(dist, i+6, MAX_COLLISIONS);
             }
             nbCollisions++;
         }
-        i += 5 + uint(data[i+4]);
+        i += 7 + uint(data[i+6]);
     }
 
     CollisionData collision;
@@ -444,7 +511,7 @@ vec3 applyReflection(vec3 uvColor){
     vec3 res = applyDiffusionAndSpecular(vPosition)*uvColor;
     /*CollisionData reflection = checkCollision(vPosition, vNormal);
     if (vPosition.y < 0 && reflection.vertex != vec3(0.0)){
-        res += applyDiffusionAndSpecular(reflection.vertex)*reflection.color*0.5;
+        res += applyDiffusionAndSpecular(reflection.vertex)*reflection.color;
     }*/
     return res;
 }
