@@ -17,39 +17,3 @@ This project is an OpenGL-based application that simulates a captivating fire sc
 5. **Reflections:** Reflective surfaces are implemented in the scene, allowing for the simulation of reflections that enhance the overall realism of the fire scene.
 
 6. **Optimizations** This project required a huge optimization by using octrees to make it run around 30 fps.
-
-## Requirements
-
-Ensure that the following dependencies are installed before running the project:
-
-- OpenGL
-- GLFW (OpenGL Framework)
-
-## How to Build and Run
-
-1. Clone the repository:
-
-    ```bash
-    git clone https://github.com/Rickil/POGL.git
-    cd POGL
-    ```
-
-2. Build the project:
-
-    ```bash
-    mkdir build
-    cd build
-    cmake ..
-    make
-    ```
-
-3. Run the executable:
-
-    ```bash
-    ./fire_scene
-    ```
-
-## Controls
-
-- **W/A/S/D:** Navigate the camera through the scene.
-- **Mouse Movement:** Adjust the camera orientation.
