@@ -17,3 +17,5 @@ This project is an OpenGL-based application that simulates a captivating fire sc
 5. **Reflections:** Reflective surfaces are implemented in the scene, allowing for the simulation of reflections that enhance the overall realism of the fire scene.
 
 6. **Optimizations** This project required a huge optimization by using octrees to make it run around 30 fps.
+
+![POGL_UNCROPPED](https://github.com/Rickil/POGL/assets/38404628/15543fce-003d-4a78-98af-79238f49914d)
