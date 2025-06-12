@@ -1,0 +1,13 @@
+#version 450
+
+in vec3 color;
+in float a;
+
+
+out vec4 fragColor;
+
+void main(){
+
+    fragColor = vec4(color,a);
+    //fragColor = vec4(1.0,1.0,0.0,1.0);
+}
